@@ -2,6 +2,20 @@
 <items version="2" >
 
     <item
+        jar="C:\Users\Adam\Desktop\Projects\Github\FitnessApp\app\build\intermediates\exploded-aar\com.android.support\support-v4\21.0.3\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="2c91c949a45a21cdecf26e03951e46c7beec9ad8">
+        <dex dex="C:\Users\Adam\Desktop\Projects\Github\FitnessApp\app\build\intermediates\pre-dexed\debug\classes-9a9c7b2702ef8e26ec091e00f6597623ae9d993f.jar" />
+    </item>
+    <item
+        jar="C:\Users\Adam\Desktop\Projects\Github\FitnessApp\app\build\intermediates\exploded-aar\com.android.support\support-v4\21.0.3\libs\internal_impl-21.0.3.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="01ec05bfbafcc07646ba813000bf2ef11742dd03">
+        <dex dex="C:\Users\Adam\Desktop\Projects\Github\FitnessApp\app\build\intermediates\pre-dexed\debug\internal_impl-21.0.3-5b951d566b0b13bb436b72e0bc1b81fd77e2bab8.jar" />
+    </item>
+    <item
         jar="C:\Users\Adam\AppData\Local\Android\sdk\extras\android\m2repository\com\android\support\support-annotations\21.0.3\support-annotations-21.0.3.jar"
         jumboMode="false"
         revision="21.1.2"
@@ -14,6 +28,13 @@
         revision="21.1.2"
         sha1="81d42bf983a8741f4888a6e333e454e4a5e0eeb7">
         <dex dex="C:\Users\Adam\Documents\GitHub\FitnessApp\app\build\intermediates\pre-dexed\debug\classes-bd02fb5fb9f237f0b2b01202e25f4b92ce213594.jar" />
+    </item>
+    <item
+        jar="C:\Users\Adam\Desktop\Projects\Github\FitnessApp\app\build\intermediates\exploded-aar\com.android.support\appcompat-v7\21.0.3\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="81d42bf983a8741f4888a6e333e454e4a5e0eeb7">
+        <dex dex="C:\Users\Adam\Desktop\Projects\Github\FitnessApp\app\build\intermediates\pre-dexed\debug\classes-46459b8ef7fb7637a2254437c5efc89dd1ef5052.jar" />
     </item>
     <item
         jar="C:\Users\Adam\Documents\GitHub\FitnessApp\app\build\intermediates\exploded-aar\com.android.support\support-v4\21.0.3\libs\internal_impl-21.0.3.jar"
