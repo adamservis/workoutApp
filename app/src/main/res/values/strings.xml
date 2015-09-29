@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">GymTrackR</string>
+    <string name="action_settings">Settings</string>
+    <string name="workspaceAddCircuitButtonText">Circuit</string>
+    <string name="workspaceBrowseButtonText">Browse</string>
+    <string name="workspaceAddButtonText">Add</string>
+    <string name="browse_title">Browse Exercises</string>
+    <string name="defaultSearchText">Input exercise name here</string>
+    <string name="title_activity_start_main">StartMainActivity</string>
+    <string name="hello_world">Hello world!</string>
+
+    <!-- Start Menu Strings -->
+    <string name="s_workoutNoPlanButtonText">Workout now</string>
+    <string name="s_start_welcome_message">Welcome to GymTrackR</string>
+    <string name="s_workoutFromPlanButtonText">Workout from a plan</string>
+    <string name="s_createPlanButtonText">Create a new plan</string>
+    <string name="s_modifyPlanButtonText">Modify an existing plan</string>
+    <string name="s_viewHistoryButtonText">View History</string>
+    <string name="title_activity_load">LoadActivity</string>
+
+    <!-- Load Strings-->
+    <string name="load_radioText_workout">Workout</string>
+    <string name="load_radioText_edit">Edit</string>
+    <string name="load_buttonText_workout">Add plan</string>
+
+    <!--History Strings-->
+    <string name="TOTAL_HISTORY_STRING">Workout data by day</string>
+    <string name="DAY_HISTORY_STRING">Workout data for date</string>
+    <string name="EXERCISE_HISTORY_STRING">Workout data for exercise</string>
+
+</resources>

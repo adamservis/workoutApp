@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/detailView">
+
+    <TextView
+        android:id="@+id/exerciseNameView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/detailLinearLayout">
+
+    </LinearLayout>
+
+    <TextView
+        android:text="Exercise History Data"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"/>
+
+</RelativeLayout>-->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="fill_parent"
+    android:id="@+id/detailView">
+
+    <com.main.toledo.gymtrackr.AutoResizeTextView
+        android:layout_marginTop="10dp"
+        android:id="@+id/exerciseNameView"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:textSize="30sp"
+        />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:id="@+id/detailLinearLayout"
+        android:layout_weight="4">
+
+    </LinearLayout>
+
+    <TextView
+        android:text="Exercise History Data"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:gravity="bottom"
+        android:textSize="20sp"
+        android:layout_weight="1"/>
+
+ <!--   <TextView
+        android:layout_marginTop="10dp"
+        android:textSize="30sp"
+        android:id="@+id/exerciseNameView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/detailLinearLayout">
+
+    </LinearLayout>
+
+    <TextView
+        android:text="Exercise History Data"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:gravity="bottom"
+        android:textSize="20sp"/>-->
+
+</LinearLayout>

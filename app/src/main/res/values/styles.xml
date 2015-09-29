@@ -1,0 +1,52 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+    </style>
+
+    <style parent="android:Widget.Holo.Light.AutoCompleteTextView" name="AutoCompleteTextViewGTR_Theme">
+        <item name="android:dropDownSelector">@drawable/gtr_theme_list_selector</item>
+        <item name="android:background">@drawable/gtr_theme_edit_text</item>
+    </style>
+
+    <style parent="android:Widget.Holo.Light.Button" name="Buttongtr_theme">
+        <item name="android:background">@drawable/button</item>
+    </style>
+
+    <style parent="android:Widget.Holo.Light.ImageButton" name="ImageButtongtr_theme">
+        <item name="android:background">@drawable/button</item>
+    </style>
+
+    <style parent="android:Theme.Holo.Light" name="_gtr_theme">
+        <item name="android:fastScrollThumbDrawable">@drawable/gtr_theme_fastscroll_thumb</item>
+    </style>
+    <style name="myButton">
+        <item name="android:background">@drawable/button</item>
+        <item name="android:textViewStyle">@style/MyTextViewStyle</item>
+        <item name="android:layout_margin">5dp</item>
+    </style>
+    <style name="myDarkButton">
+        <item name="android:background">@drawable/dark_button</item>
+        <item name="android:textViewStyle">@style/MyTextViewStyle</item>
+    </style>
+    <style name="myCircuit" >
+        <item name="android:background">@drawable/circuit</item>
+        <item name="android:padding">15dp</item>
+    </style>
+    <style name="myExercises">
+        <item name="android:background">@drawable/circuit_notselected</item>
+    </style>
+    <style name="MyTextViewStyle" >
+        <item name="android:textColor">#000000</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:layout_alignParentRight">true</item>
+        <item name="android:layout_alignParentEnd">true</item>
+        <item name="android:textScaleX">1.2</item>
+    </style>
+    <style name="MyTextViewStyleBrowseExerciseName" >
+        <item name="android:textColor">#1ca4fb</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+</resources>

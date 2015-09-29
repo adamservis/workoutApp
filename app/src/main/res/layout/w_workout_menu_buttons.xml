@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- this XML specifies the layout for the buttons at the very end of the workout in the workspace-->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="30dp"
+    android:paddingBottom="100dp"
+    android:id="@+id/finalItem">
+
+    <ImageButton
+        android:layout_width="fill_parent"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_add_row_50"
+        android:id="@+id/AddCircuitButton"
+        style="@style/myButton"
+        android:layout_weight="1"/>
+    <ImageButton
+        android:layout_width="fill_parent"
+        android:layout_height="40dp"
+        style="@style/myButton"
+        android:src="@drawable/ic_copy_50"
+        android:id="@+id/PlusButton"
+        android:layout_weight="1" />
+
+    <ImageButton
+        android:layout_width="fill_parent"
+        android:layout_height="40dp"
+        android:padding="10dp"
+        style="@style/myButton"
+        android:text="Browse"
+        android:src="@drawable/ic_search_50"
+        android:id="@+id/BrowseButton"
+        android:layout_weight="1"/>
+
+</LinearLayout>

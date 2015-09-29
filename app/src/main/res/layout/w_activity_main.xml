@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:baselineAligned="false"
+    android:id="@+id/mainLayoutHandle"
+    >
+
+
+
+    <FrameLayout
+        android:id="@+id/WorkspaceListContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="5"
+        android:background="#1ca4fb"
+        />
+
+    <FrameLayout
+        android:id="@+id/WorkspacePalletContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#f7f7f7"
+        />
+
+</LinearLayout>
