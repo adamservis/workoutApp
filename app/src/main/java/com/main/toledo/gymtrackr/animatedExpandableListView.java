@@ -59,7 +59,7 @@ public class animatedExpandableListView extends ExpandableListView {
     }
 
     @Override
-    protected void dispatchDraw(Canvas canvas) { //todo fix offset bug
+    protected void dispatchDraw(Canvas canvas) {
         super.dispatchDraw(canvas);
 
         if(mExpanding) animateExpansion();
@@ -108,7 +108,7 @@ public class animatedExpandableListView extends ExpandableListView {
         //Log.d(logTag, "getViewForId() looking for id: " + itemID);
         WorkspaceExpandableListAdapterMKIII adapter =
                 (WorkspaceExpandableListAdapterMKIII) getExpandableListAdapter();
-
+        //adapter.debugIDs();
         int firstVisible = getFirstVisiblePosition();
         for(int i = 0; i < getChildCount(); i++) {
 
@@ -121,13 +121,13 @@ public class animatedExpandableListView extends ExpandableListView {
             //if(testflag)Log.d(logTag, "getViewForID - looking for id: " + itemID);
             //Log.d(logTag, "getViewForID - i: " + i);
             //Log.d(logTag, "getViewForID - explstpos: " + expLstPos);
-            //if(testflag)Log.d(logTag, "getViewForID - LOOKING FOR VIEW AT GROUP: " + group + " + CHILD: " + child);
+            //Log.d(logTag, "getViewForID - LOOKING FOR VIEW AT GROUP: " + group + " + CHILD: " + child);
             if (type == PACKED_POSITION_TYPE_GROUP){
-                //Log.d(logTag, "getViewForID - type is group");
-                //Log.d(logTag, "getViewForID, group: " + group + " found, id == " + Workout.get(group).getStableID());
+                //Log.d(logTag, "getViewForID - type is group " + group + " , id is: " + adapter.getGroupId(group));
                 //\\\if(Workout.get(group).getStableID() == itemID) {
+                //Log.d(logTag, "Group ID call 8 group:" + group);
                 if(adapter.getGroupId(group) == itemID){
-                    //if(testflag)Log.d(logTag, "FOUND GROUP! ID: " + itemID);
+                    //Log.d(logTag, "FOUND GROUP! ID: " + itemID);
                     return getChildAt(i);
                 }
 
@@ -142,7 +142,50 @@ public class animatedExpandableListView extends ExpandableListView {
                 }
             }
         }
-        //Log.d(logTag, "getViewForId() returning null!!!");
+        //Log.d(logTag, "getViewForId() returning null for item id " + itemID + "!!!!!!!!!!!!!!");
+        return null;
+    }
+
+    protected View getViewForID (long itemID, boolean TESTFLAG){
+        //Log.d(logTag, "getViewForId() looking for id: " + itemID);
+        WorkspaceExpandableListAdapterMKIII adapter =
+                (WorkspaceExpandableListAdapterMKIII) getExpandableListAdapter();
+        //adapter.debugIDs();
+        int firstVisible = getFirstVisiblePosition();
+        for(int i = 0; i < getChildCount(); i++) {
+
+            Long expLstPos = getExpandableListPosition(firstVisible + i);
+            int group = getPackedPositionGroup(expLstPos);
+            int type = getPackedPositionType(expLstPos);
+            int child = getPackedPositionChild(expLstPos);
+            //we're gonna get the position of the list item in exp list speak
+            //then check that id vs the id of what we think the id should be
+            //if(testflag)Log.d(logTag, "getViewForID - looking for id: " + itemID);
+            //Log.d(logTag, "getViewForID - i: " + i);
+            //Log.d(logTag, "getViewForID - explstpos: " + expLstPos);
+            Log.d(logTag, "getViewForID - LOOKING FOR VIEW AT GROUP: " + group + " + CHILD: " + child + " ID: " + itemID);
+            if (type == PACKED_POSITION_TYPE_GROUP){
+                //Log.d(logTag, "getViewForID - type is group " + group + " , id is: " + adapter.getGroupId(group));
+                //\\\if(Workout.get(group).getStableID() == itemID) {
+                //Log.d(logTag, "Group ID call 8 group:" + group);
+                if(adapter.getGroupId(group) == itemID){
+                    Log.d(logTag, "FOUND GROUP! ID: " + itemID);
+                    return getChildAt(i);
+                }
+
+            } else if (type == PACKED_POSITION_TYPE_CHILD){
+                //Log.d(logTag, "getViewForID, group/child/name " + group +"/" + child + "/" + Workout.get(group).getExercise(child).getName() + " found, id == " + Workout.get(group).getExercise(child).getStableID() + " - i : " + i);
+                //\\\if(Workout.get(group).getExercise(child).getStableID() == itemID) {
+                Log.d(logTag, "Seeing if view id: " + itemID + " is at group: " + group + " and child: " + child);
+                if(adapter.getChildId(group, child) == itemID){
+                    //if(testflag)Log.d(logTag, "FOUND CHILD! ID: " + itemID);
+
+                    //if (testflag) return getChildAt(i - 1);
+                    return getChildAt(i);
+                }
+            }
+        }
+        Log.d(logTag, "getViewForId() returning null for item id " + itemID + "!!!!!!!!!!!!!!");
         return null;
     }
 
@@ -172,7 +215,7 @@ public class animatedExpandableListView extends ExpandableListView {
                 int firstVisible = getFirstVisiblePosition();
                 switch(PASS){
                     case 1:
-                        Log.d(logTag, "pass 1");
+                        //Log.d(logTag, "pass 1");
                         //then get references to offset views
 
                         for (int i = 0; i < childCount; i++){
@@ -277,9 +320,10 @@ public class animatedExpandableListView extends ExpandableListView {
 
         final WorkspaceExpandableListAdapterMKIII adapter =
                 (WorkspaceExpandableListAdapterMKIII)getExpandableListAdapter();
+        //Log.d(logTag, "Get group id call 9");
         final long groupHeaderId = adapter.getGroupId(groupPos);
 
-        //Log.d(logTag, "expandGroupWithAnimation(int groupPos) called on group: " + groupPos);
+        Log.d(logTag, "expandGroupWithAnimation(int groupPos) called on group: " + groupPos);
 
         //Get locations of views to be offset by expansion
         int childCount = getChildCount();

@@ -10,19 +10,18 @@
 
 
     <FrameLayout
-        android:id="@+id/WorkspaceListContainer"
+        android:id="@+id/WorkspaceFragmentContainer"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="5"
+        android:layout_height="match_parent"
         android:background="#1ca4fb"
         />
 
-    <FrameLayout
+    <!--<FrameLayout
         android:id="@+id/WorkspacePalletContainer"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:background="#f7f7f7"
-        />
+        />-->
 
 </LinearLayout>

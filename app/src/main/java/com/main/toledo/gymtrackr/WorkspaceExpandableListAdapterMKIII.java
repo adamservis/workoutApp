@@ -12,7 +12,6 @@ import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -30,6 +29,7 @@ import android.widget.TextView;
 
 public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapter{
 
+    //public static final String PLACEHOLDER_CIRCUIT = "plc";
     private String logTag = "WRKSPACEADPTR";
     private Context mContext;
 
@@ -37,7 +37,7 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
     final float mCheckedIndentation = 100;
     private ArrayList<Circuit> mWorkout; //6/23 UNEEDED? = new ArrayList<>();
     private LinearLayout.LayoutParams params;
-
+    private boolean mShowListPadding = false;
     /*
      *  STABLE ID THINGS
      */
@@ -50,17 +50,18 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
 
 
     //BROWSE STATES
-    final int NOT_BROWSE = 0, BROWSE_WORKOUT = 1, WORKOUT_BROWSE = 2;
+    //final int NOT_BROWSE = 0, BROWSE_WORKOUT = 1, WORKOUT_BROWSE = 2;
     //HEADER TYPES
-    final static int REGULAR_HEADER = 0, BLANK_HEADER = 1, PADDED_BLANK_HEADER =2;
-    final static int NUM_HEADERS = 3;
+    private final static int REGULAR_HEADER = 0, BLANK_HEADER = 1, PADDING_ITEM = 2;
+    private final static int NUM_HEADERS = 3;
     //CHILD TYPES
     //M means child has plan metric, C means child is checked
-    final static int EXERCISE_ITEM_1 = 0, EXERCISE_ITEM_2 = 1, EXERCISE_ITEM_3 = 2,
+    private final static int EXERCISE_ITEM_1 = 0, EXERCISE_ITEM_2 = 1, EXERCISE_ITEM_3 = 2,
             EXERCISE_ITEM_1_M = 3, EXERCISE_ITEM_2_M = 4, EXERCISE_ITEM_3_M = 5, EMPTY_BUTTONS = 6,
-            CIRCUIT_BUTTONS = 7, WORKOUT_BUTTONS = 8, TERRIBLE_THINGS = 9, EXERCISE_ITEM_1C = 10, EXERCISE_ITEM_2C = 11, EXERCISE_ITEM_3C = 12,
+            //CIRCUIT_BUTTONS = 7, WORKOUT_BUTTONS = 8,
+            FOOTER_ITEM = 7, TERRIBLE_THINGS = 9, EXERCISE_ITEM_1C = 10, EXERCISE_ITEM_2C = 11, EXERCISE_ITEM_3C = 12,
             EXERCISE_ITEM_1_MC = 13, EXERCISE_ITEM_2_MC = 14, EXERCISE_ITEM_3_MC = 15;
-    final static int NUM_CHILDREN = 16;
+    private final static int NUM_CHILDREN = 16;
 
     //private ChildViewHolder holderHandle;
     private int SCREENWIDTH;
@@ -72,7 +73,6 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
     public WorkspaceExpandableListAdapterMKIII(Context context){
         params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
         mContext = context;
-
         //Set initial stable id's ADD IDS TO SOME MAP
         AVAILABLE_STABLE_ID = 0L;
         mWorkout = WorkoutData.get(mContext).getWorkout();
@@ -85,13 +85,16 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
             }
         }
 
-
         //Used for display things THERE IS PROBABLY A BETTER WAY
         WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
         SCREENWIDTH = size.x;
+    }
+
+    public void toggleListPadding(boolean enableFlag){
+        mShowListPadding = enableFlag;
     }
 
     public void setDragListener(dragListener listener){ mListener = listener; }
@@ -114,24 +117,26 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
         int type;
         Exercise e = mWorkout.get(group).getExercise(child);
         if(e.getName().equals("test")){
-            if(mWorkout.size()-1 == group){
+
+            //if(mWorkout.size()-1 == group){
                 //group is last, and test means end buttons
 
                 //if(editable)
-                    type = WORKOUT_BUTTONS;
+            //        type = WORKOUT_BUTTONS;
                 /*
                 else
                     type = EMPTY_BUTTONS;
                     */
-            } else {
+            //} else {
                 //if not last group and test name, type is rego buttons
                 //if(editable)
-                    type = CIRCUIT_BUTTONS;
+            //        type = CIRCUIT_BUTTONS;
                 /*
                 else
                     type = EMPTY_BUTTONS;
                     */
-            }
+            //}
+            type = FOOTER_ITEM;
         } else {
             //we have reggo exercise
             ArrayList<Metric> metrics = e.getMetrics();
@@ -191,9 +196,9 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
         if(c.isOpen()){
             type = REGULAR_HEADER;
         } else {
-            if(group != mWorkout.size()-1) {
-                type = PADDED_BLANK_HEADER;
-            }else{
+            if(c.getType()==Circuit.CircuitType.PLACEHOLDER) {
+                type = PADDING_ITEM;
+            } else {
                 type = BLANK_HEADER;
             }
         }
@@ -224,70 +229,73 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
         if(convertView == null) {
             holder = new ChildViewHolder();
             switch (type) {
-                case CIRCUIT_BUTTONS:
-                    convertView = inflater.inflate(R.layout.w_circuit_menu_buttons, null);
+                case FOOTER_ITEM:
+                    convertView = inflater.inflate(R.layout.w_group_footer, parent, false);
+                    break;
+                //case CIRCUIT_BUTTONS:
+                    //convertView = inflater.inflate(R.layout.w_group_footer, null);
 
                     //holder.plusButton = (ImageButton) convertView.findViewById(R.id.PlusButton);
                     //holder.browseButton = (ImageButton) convertView.findViewById(R.id.BrowseButton);
-                    break;
-                case WORKOUT_BUTTONS:
-                    convertView = inflater.inflate(R.layout.w_workout_menu_buttons, null);
+                    //break;
+                //case WORKOUT_BUTTONS:
+                    //convertView = inflater.inflate(R.layout.w_workout_menu_buttons, null);
                     //add circuit code
                     //holder.browseButton = (ImageButton) convertView.findViewById(R.id.BrowseButton);
                     //holder.addCircuitButton = (ImageButton) convertView.findViewById(R.id.AddCircuitButton);
                     //holder.plusButton = (ImageButton) convertView.findViewById(R.id.PlusButton);
-                    break;
+                    //break;
                 case EMPTY_BUTTONS:
-                    convertView = inflater.inflate(R.layout.w_empty_wopadding, null);
+                    convertView = inflater.inflate(R.layout.w_empty_wopadding, parent, false);
                     break;
                 case EXERCISE_ITEM_1:
-                    convertView = inflater.inflate(R.layout.w_exercise, null);
+                    convertView = inflater.inflate(R.layout.w_exercise, parent, false);
                     dynamicViewLayout = (LinearLayout) convertView.findViewById(R.id.dynamicViewLayout);
                     dynamicViewLayout.addView(createMetricLayout(group, child, holder));
                     populateHolder(holder, convertView);
                     break;
                 case EXERCISE_ITEM_1_M:
-                    convertView = inflater.inflate(R.layout.w_exercise, null);
+                    convertView = inflater.inflate(R.layout.w_exercise, parent, false);
                     dynamicViewLayout = (LinearLayout) convertView.findViewById(R.id.dynamicViewLayout);
                     dynamicViewLayout.addView(createGoalLayout(group, child, holder));
                     dynamicViewLayout.addView(createMetricLayout(group, child, holder));
                     populateHolder(holder, convertView);
                     break;
                 case EXERCISE_ITEM_2:
-                    convertView = inflater.inflate(R.layout.w_exercise, null);
+                    convertView = inflater.inflate(R.layout.w_exercise, parent, false);
                     dynamicViewLayout = (LinearLayout) convertView.findViewById(R.id.dynamicViewLayout);
                     dynamicViewLayout.addView(createMetricLayout(group, child, holder));
                     populateHolder(holder, convertView);
                     break;
                 case EXERCISE_ITEM_2_M:
-                    convertView = inflater.inflate(R.layout.w_exercise, null);
+                    convertView = inflater.inflate(R.layout.w_exercise, parent, false);
                     dynamicViewLayout = (LinearLayout) convertView.findViewById(R.id.dynamicViewLayout);
                     dynamicViewLayout.addView(createGoalLayout(group, child, holder));
                     dynamicViewLayout.addView(createMetricLayout(group, child, holder));
                     populateHolder(holder, convertView);
                     break;
                 case EXERCISE_ITEM_3:
-                    convertView = inflater.inflate(R.layout.w_exercise, null);
+                    convertView = inflater.inflate(R.layout.w_exercise, parent, false);
                     dynamicViewLayout = (LinearLayout) convertView.findViewById(R.id.dynamicViewLayout);
                     dynamicViewLayout.addView(createMetricLayout(group, child, holder));
                     populateHolder(holder, convertView);
                     break;
                 case EXERCISE_ITEM_3_M:
-                    convertView = inflater.inflate(R.layout.w_exercise, null);
+                    convertView = inflater.inflate(R.layout.w_exercise, parent, false);
                     dynamicViewLayout = (LinearLayout) convertView.findViewById(R.id.dynamicViewLayout);
                     dynamicViewLayout.addView(createGoalLayout(group, child, holder));
                     dynamicViewLayout.addView(createMetricLayout(group, child, holder));
                     populateHolder(holder, convertView);
                     break;
                 case EXERCISE_ITEM_1C:
-                    convertView = inflater.inflate(R.layout.w_exercise, null);
+                    convertView = inflater.inflate(R.layout.w_exercise, parent, false);
                     dynamicViewLayout = (LinearLayout) convertView.findViewById(R.id.dynamicViewLayout);
                     dynamicViewLayout.addView(createMetricLayout(group, child, holder));
                     populateHolder(holder, convertView);
                     doCheck(holder);
                     break;
                 case EXERCISE_ITEM_1_MC:
-                    convertView = inflater.inflate(R.layout.w_exercise, null);
+                    convertView = inflater.inflate(R.layout.w_exercise, parent, false);
                     dynamicViewLayout = (LinearLayout) convertView.findViewById(R.id.dynamicViewLayout);
                     dynamicViewLayout.addView(createGoalLayout(group, child, holder));
                     dynamicViewLayout.addView(createMetricLayout(group, child, holder));
@@ -295,14 +303,14 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
                     doCheck(holder);
                     break;
                 case EXERCISE_ITEM_2C:
-                    convertView = inflater.inflate(R.layout.w_exercise, null);
+                    convertView = inflater.inflate(R.layout.w_exercise, parent, false);
                     dynamicViewLayout = (LinearLayout) convertView.findViewById(R.id.dynamicViewLayout);
                     dynamicViewLayout.addView(createMetricLayout(group, child, holder));
                     populateHolder(holder, convertView);
                     doCheck(holder);
                     break;
                 case EXERCISE_ITEM_2_MC:
-                    convertView = inflater.inflate(R.layout.w_exercise, null);
+                    convertView = inflater.inflate(R.layout.w_exercise, parent, false);
                     dynamicViewLayout = (LinearLayout) convertView.findViewById(R.id.dynamicViewLayout);
                     dynamicViewLayout.addView(createGoalLayout(group, child, holder));
                     dynamicViewLayout.addView(createMetricLayout(group, child, holder));
@@ -310,14 +318,14 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
                     doCheck(holder);
                     break;
                 case EXERCISE_ITEM_3C:
-                    convertView = inflater.inflate(R.layout.w_exercise, null);
+                    convertView = inflater.inflate(R.layout.w_exercise, parent, false);
                     dynamicViewLayout = (LinearLayout) convertView.findViewById(R.id.dynamicViewLayout);
                     dynamicViewLayout.addView(createMetricLayout(group, child, holder));
                     populateHolder(holder, convertView);
                     doCheck(holder);
                     break;
                 case EXERCISE_ITEM_3_MC:
-                    convertView = inflater.inflate(R.layout.w_exercise, null);
+                    convertView = inflater.inflate(R.layout.w_exercise, parent, false);
                     dynamicViewLayout = (LinearLayout) convertView.findViewById(R.id.dynamicViewLayout);
                     dynamicViewLayout.addView(createGoalLayout(group, child, holder));
                     dynamicViewLayout.addView(createMetricLayout(group, child, holder));
@@ -333,88 +341,8 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
         }
         final int height = convertView.getMeasuredHeight();
         switch (type) {
-            case CIRCUIT_BUTTONS:
+            case FOOTER_ITEM:
                 emptyFlag = true;
-
-                /*
-                holder.browseButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent i = new Intent(mContext, BrowseActivity.class);
-                        WorkoutData.get(mContext).setStateCircuitOpenStatus(true);
-                        WorkoutData.get(mContext).setStateCircuit(group);
-                        WorkoutData.get(mContext).setBrowseState(WORKOUT_BROWSE);
-
-                        ((WorkspaceActivity) mContext).ListFragment.workspaceListView.clearHandle();
-                        mContext.startActivity(i);
-                    }
-                });
-
-
-                holder.plusButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (WorkoutData.get(mContext).isAnExerciseToggled()){
-                            int CircuitSize = mWorkout.get(group).getSize();
-                            Exercise e = WorkoutData.get(mContext).getToggledExerciseCopy();
-                            e.setAnimate(true);
-                            mWorkout.get(group).addExerciseAtIndex(CircuitSize - 1, e);
-                            notifyDataSetChanged();
-                            ((WorkspaceActivity) mContext).ListFragment                                                     ///////////////////////////THIS NEEDS TO SCALE FOR RESOLUTIONS
-                                    .workspaceListView.smoothScrollBy(height, 800);
-                        }
-                    }
-                });
-                */
-
-                break;
-            case WORKOUT_BUTTONS:
-                emptyFlag = true;
-                /*
-                holder.addCircuitButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        WorkoutData.get(mContext).addCircuit(group);
-                        ((WorkspaceActivity) mContext).ListFragment.workspaceListView.expandGroup(group);
-
-                        notifyDataSetChanged();
-
-                        ((WorkspaceActivity) mContext).ListFragment                                                     ///////////////////////////THIS NEEDS TO SCALE FOR RESOLUTIONS
-                                .workspaceListView.smoothScrollBy(height*2, 800);
-                    }
-                });
-
-
-                holder.browseButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent i = new Intent(mContext, BrowseActivity.class);
-                        WorkoutData.get(mContext).setStateCircuitOpenStatus(false);
-                        WorkoutData.get(mContext).setStateCircuit(group);
-                        WorkoutData.get(mContext).setBrowseState(WORKOUT_BROWSE);
-
-                        ((WorkspaceActivity) mContext).ListFragment.workspaceListView.clearHandle();
-                        mContext.startActivity(i);
-                    }
-                });
-
-
-                holder.plusButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (WorkoutData.get(mContext).isAnExerciseToggled()){
-                            int WorkoutSize = mWorkout.size();
-                            Exercise e = WorkoutData.get(mContext).getToggledExerciseCopy();
-                            e.setAnimate(true);
-                            WorkoutData.get(mContext).addClosedCircuit(e, WorkoutSize -1);
-                            notifyDataSetChanged();
-                            ((WorkspaceActivity) mContext).ListFragment                               ///////////////////////////THIS NEEDS TO SCALE FOR RESOLUTIONS
-                                    .workspaceListView.smoothScrollBy(height, 800);
-                        }
-                    }
-                });
-                */
-
                 break;
             case EMPTY_BUTTONS:
                 emptyFlag = true;
@@ -523,7 +451,7 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
             holder = new GroupViewHolder();
             switch (type) {
                 case REGULAR_HEADER:
-                    convertView = inflater.inflate(R.layout.w_group_header, null);
+                    convertView = inflater.inflate(R.layout.w_group_header, parent, false);
                     holder.circuitNameText = (TextView) convertView.findViewById(R.id.circuitNameHeader);
                     holder.arrow = (ImageView) convertView.findViewById(R.id.Arrow);
                     holder.footerView = (View)convertView.findViewById(R.id.circuitFooter);
@@ -533,20 +461,17 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
                         holder.dragHandle.setOnLongClickListener(new View.OnLongClickListener() {
                             @Override
                             public boolean onLongClick(View view) {
-                                Log.d(logTag, "!!!!!!!!!!!!!!!!!!!!should set view visibile");
                                 mListener.OnDragHandleLongClickedListener(finalConvertView, ExpandableListView.PACKED_POSITION_TYPE_GROUP);
-                                return false;
+                                return true;
                             }
                         });
                     }
                     break;
                 case BLANK_HEADER:
-                    convertView = inflater.inflate(R.layout.w_empty_wopadding, null);
-
+                    convertView = inflater.inflate(R.layout.w_empty_wopadding, parent, false);
                     break;
-                case PADDED_BLANK_HEADER:
-                    convertView = inflater.inflate(R.layout.w_empty_wpadding, null);
-
+                case PADDING_ITEM:
+                    convertView = inflater.inflate(R.layout.w_empty_wpadding, parent, false);
                     break;
             }
             convertView.setTag(holder);
@@ -563,7 +488,6 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
                 holder.arrow.setImageResource(imageResourceId);
                 holder.dragHandle = (View) convertView.findViewById(R.id.drag_icon);
                 if (isExpanded) {
-                    Log.d(logTag, "!!!!!!!!!!!!!!!!!!!!!!!!!!!footer set to gone");
                     holder.footerView.setVisibility(View.GONE);
                 }else {
                     holder.footerView.setVisibility(View.VISIBLE);
@@ -571,15 +495,25 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
 
                 break;
             case BLANK_HEADER:
+
                 //((WorkspaceActivity) mContext).ListFragment.workspaceListView.expandGroup(groupPosition);
                 //if(!editable)
-                    convertView.setPadding(0,0,0,SCREENWIDTH/2);
+                //convertView.setPadding(0,0,0,SCREENWIDTH/2);
                 /*
                 else
                     convertView.setPadding(0,0,0,0);
                     */
                 break;
-            case PADDED_BLANK_HEADER:
+            case PADDING_ITEM:
+
+
+                if(mShowListPadding){
+                    //todo make dynamic
+                    convertView.setPadding( 0, 900, 0, 0 );
+                } else {
+                    convertView.setPadding( 0, 0, 0, 0 );
+                }
+
                 //((WorkspaceActivity) mContext).ListFragment.workspaceListView.expandGroup(groupPosition);
                 break;
         }
@@ -608,12 +542,17 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
     //will return reference to map
     @Override
     public long getGroupId(int groupPosition){
+        if(groupPosition == WorkspaceExpandableListView.INVALID_POSITION){
+            return  INVALID_ID;
+        }
 
         if(groupPosition < 0 || groupPosition >= mGroupIdMap.size()){
+            /*
             Log.d(logTag, "*****************************ATTENTION*******************************");
             Log.d(logTag, "getGroupId() returned INVALID_ID for groupPosition: " + groupPosition
-                    + "GROUPPOSITION OUT OF HASH MAP BOUNDS");
+                    + " GROUPPOSITION OUT OF HASH MAP BOUNDS");
             Log.d(logTag, "*********************************************************************");
+            */
             return INVALID_ID;
         }
 
@@ -622,7 +561,7 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
         if(!mGroupIdMap.containsKey(circuit)) {
             Log.d(logTag, "*****************************ATTENTION*******************************");
             Log.d(logTag, "getGroupId() returned INVALID_ID for groupPosition: "
-                    + groupPosition + "NO ID FOR KEY CONTAINED IN GROUPHASHMAP");
+                    + groupPosition + " NO ID FOR KEY CONTAINED IN GROUPHASHMAP");
             Log.d(logTag, "*********************************************************************");
             return INVALID_ID;
         }
@@ -631,7 +570,16 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
 
     }
 
-
+    public void debugIDs(){
+        Log.d(logTag, "GROUP IDS");
+        for(Circuit c: mGroupIdMap.keySet()){
+            Log.d(logTag, "ID:          " + mGroupIdMap.get(c));
+        }
+        Log.d(logTag, "CHILD IDS");
+        for(Exercise e: mChildIdMap.keySet()){
+            Log.d(logTag, "ID:          " + mChildIdMap.get(e));
+        }
+    }
 
     @Override
     public long getChildId(int groupPosition, int childPosition){
@@ -665,11 +613,12 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
         return mChildIdMap.get(exercise);
     }
 
-    public void addChild(int groupPosition, int childPosition, Exercise exercise){
+    public long addChild(int groupPosition, int childPosition, Exercise exercise){
         //adds child at specified location
         mWorkout.get(groupPosition).add(childPosition, exercise);
         mChildIdMap.put(exercise, AVAILABLE_STABLE_ID);
         AVAILABLE_STABLE_ID++;
+        return AVAILABLE_STABLE_ID - 1;
     }
 
     public void removeChild(int groupPosition, int childPosition){
@@ -679,10 +628,11 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
         mWorkout.get(groupPosition).removeExercise(childPosition);
     }
 
-    public void addGroup(int groupPostion, Circuit circuit){
+    public long addGroup(int groupPostion, Circuit circuit){
         mWorkout.add(groupPostion, circuit);
         mGroupIdMap.put(circuit, AVAILABLE_STABLE_ID);
         AVAILABLE_STABLE_ID++;
+        return AVAILABLE_STABLE_ID - 1;
     }
 
 

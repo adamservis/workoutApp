@@ -1,11 +1,8 @@
 package com.main.toledo.gymtrackr;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.ListFragment;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -16,10 +13,10 @@ import android.view.MenuItem;
 public class WorkspaceActivity extends ActionBarActivity {
 
     //WorkspaceExpandableListAdapterMKIII listAdapter;
-    WorkspaceListFragment ListFragment;
-    private WorkspacePalletFragment PalletFragment ;
-    String planName;
-    Menu mOptionsMenu;
+    private WorkspaceFragment ListFragment;
+    //private WorkspacePalletFragment PalletFragment ;
+    private String planName;
+    private Menu mOptionsMenu;
     int mode;
     //LOAD/START STATES
     final int PLAN = 1, WORKOUT = 2, WORKOUT_WITH_PLAN = 4, LOAD_PLAN = 5, FROM_DETAIL = 6;
@@ -58,13 +55,13 @@ public class WorkspaceActivity extends ActionBarActivity {
 
         setContentView(R.layout.w_activity_main);
 
-        PalletFragment = new WorkspacePalletFragment();
-        ListFragment = new WorkspaceListFragment();
+        //PalletFragment = new WorkspacePalletFragment();
+        ListFragment = new WorkspaceFragment();
 
         FragmentTransaction transaction =
                 getSupportFragmentManager().beginTransaction();
-        transaction.add(R.id.WorkspacePalletContainer, PalletFragment);
-        transaction.add(R.id.WorkspaceListContainer, ListFragment);
+        //transaction.add(R.id.WorkspacePalletContainer, PalletFragment);
+        transaction.add(R.id.WorkspaceFragmentContainer, ListFragment);
         transaction.commit();
     }
 

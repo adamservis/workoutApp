@@ -3,11 +3,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingTop="20dp">
+    android:paddingTop="30dp">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:orientation="horizontal"
         android:id="@+id/circuitHeader"
         android:background="@drawable/circuit"
@@ -43,16 +43,15 @@
             android:id="@+id/drag_icon"
             android:background="@drawable/drag"/>
 
-
     </LinearLayout>
 
-    <LinearLayout
+    <View
         android:layout_width="match_parent"
-        android:layout_height="45dp"
+        android:layout_height="50dp"
         android:id="@+id/circuitFooter"
         android:background="@drawable/circuit_notselected"
         android:orientation="horizontal"
         android:visibility="gone">
-    </LinearLayout>
+    </View>
 
 </LinearLayout>

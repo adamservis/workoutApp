@@ -53,13 +53,13 @@ public class WorkoutData {
     }
 
     public void initialize(){
-
+        /*
         Circuit c = new Circuit();
         c.setOpenStatus(false);
         Exercise e = new Exercise();
         c.add(e);
         Workout.add(c);
-
+        */
         doStubs();
     }
 
@@ -82,8 +82,40 @@ public class WorkoutData {
         circuitTwo.add(new Exercise(3, "4", 0, 0, 0, 0, 0, -1));
         circuitTwo.add(new Exercise());
 
-        Workout.add(0, circuitOne);
-        Workout.add(1, circuitTwo);
+        Circuit circuitThree = new Circuit();
+        circuitThree.setOpenStatus(true);
+        circuitThree.setName("Circuit Three");
+        circuitThree.add(new Exercise(0, "1", 0, 0, 0, 0, 0, -1));
+        circuitThree.add(new Exercise(1, "2", 0, 0, 0, 0, 0, -1));
+        circuitThree.add(new Exercise(2, "3", 0, 0, 0, 0, 0, -1));
+        circuitThree.add(new Exercise(3, "4", 0, 0, 0, 0, 0, -1));
+        circuitThree.add(new Exercise());
+
+        Circuit circuitFour = new Circuit();
+        circuitFour.setOpenStatus(true);
+        circuitFour.setName("Circuit Four");
+        circuitFour.add(new Exercise(0, "1", 0, 0, 0, 0, 0, -1));
+        circuitFour.add(new Exercise(1, "2", 0, 0, 0, 0, 0, -1));
+        circuitFour.add(new Exercise(2, "3", 0, 0, 0, 0, 0, -1));
+        circuitFour.add(new Exercise(3, "4", 0, 0, 0, 0, 0, -1));
+        circuitFour.add(new Exercise());
+
+        Circuit circuitFive = new Circuit();
+        circuitFive.setOpenStatus(true);
+        circuitFive.setName("Circuit Five");
+        circuitFive.add(new Exercise(0, "1", 0, 0, 0, 0, 0, -1));
+        circuitFive.add(new Exercise(1, "2", 0, 0, 0, 0, 0, -1));
+        circuitFive.add(new Exercise(2, "3", 0, 0, 0, 0, 0, -1));
+        circuitFive.add(new Exercise(3, "4", 0, 0, 0, 0, 0, -1));
+        circuitFive.add(new Exercise());
+
+        Workout.add(WorkoutData.getNewPlaceholderCircuit());
+        Workout.add(circuitOne);
+        Workout.add(circuitTwo);
+        Workout.add(circuitThree);
+        Workout.add(circuitFour);
+        Workout.add(circuitFive);
+        Workout.add(WorkoutData.getNewPlaceholderCircuit());
     }
 
     public static WorkoutData get(Context c){
@@ -93,10 +125,26 @@ public class WorkoutData {
         return sWorkspaceData;
     }
 
-    public static Circuit getNewClosedCircuit(Exercise exercise){
+    public static Circuit getClosedCircuitWithExercise(Exercise exercise){
         Circuit circuit = new Circuit();
         circuit.setOpenStatus(false);
         circuit.add(exercise);
+        circuit.setType(Circuit.CircuitType.DATA);
+        return circuit;
+    }
+
+    public Circuit getClosedCircuit(){
+        Circuit c = new Circuit();
+        c.setOpenStatus(false);
+        c.setType(Circuit.CircuitType.DATA);
+        return c;
+    }
+
+    public static Circuit getNewPlaceholderCircuit(){
+        Circuit circuit = new Circuit();
+        circuit.setOpenStatus(false);
+        circuit.setName("...");
+        circuit.setType(Circuit.CircuitType.PLACEHOLDER);
         return circuit;
     }
 
@@ -104,13 +152,11 @@ public class WorkoutData {
         return Workout;
     }
 
-    //public ArrayList<String> getCircuitNames()
-    //addToOpenCircuit exercise to circuit c
     public void addExerciseToOpenCircuit(Exercise e, int circuitNumber){
 
         int circuitSize = Workout.get(circuitNumber).getSize();
         //adds exercise to second to last position
-        Workout.get(circuitNumber).add( circuitSize - 1 , e );
+        Workout.get(circuitNumber).add(circuitSize - 1, e);
         //Workout.get(circuitNumber).isNotLast();
 
         if (Workout.get(circuitNumber).getName() == "Placeholder"){
@@ -142,28 +188,7 @@ public class WorkoutData {
         Workout.add(circuitPosition, c);
     }
 
-    public void addClosedCircuitWithGenericExercise(int circuitNumber){
-        Exercise generic = new Exercise();
-        generic.setName("Generic 01");
 
-        Metric reps = new Metric();
-        reps.setType(metricType.REPS);
-
-        Metric time = new Metric();
-        time.setType(metricType.TIME);
-
-        Metric weight = new Metric();
-        weight.setType(metricType.WEIGHT);
-
-        generic.addMetrics(weight);
-        generic.addMetrics(reps);
-        generic.addMetrics(time);
-
-        Circuit c = new Circuit();
-        c.setOpenStatus(false);
-        c.add(generic);
-        Workout.add(circuitNumber, c);
-    }
 
     public void setToggledExerciseExplicit(Exercise e){
         mToggledExercise = e;
@@ -221,7 +246,7 @@ public class WorkoutData {
         mTempExercise = null;
     }
 
-    public void placeGenericExercise(int circuit, int exercise){
+    public Exercise getGenericExercise(){
         Exercise generic = new Exercise();
         generic.setName("Generic 01");
 
@@ -238,7 +263,7 @@ public class WorkoutData {
         generic.addMetrics(reps);
         generic.addMetrics(time);
 
-        Workout.get(circuit).add(exercise, generic);
+        return generic;
     }
 
     public void setTempCircuit(int circuit){

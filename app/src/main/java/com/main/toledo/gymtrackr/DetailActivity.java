@@ -73,8 +73,8 @@ public class DetailActivity extends ActionBarActivity{
 
         FragmentTransaction transaction =
                 getSupportFragmentManager().beginTransaction();
-        WorkspacePalletFragment tabFragment = new WorkspacePalletFragment();
-        transaction.add(R.id.tabHandle, tabFragment);
+        //WorkspacePalletFragment tabFragment = new WorkspacePalletFragment();
+        //transaction.add(R.id.tabHandle, tabFragment);
         transaction.commit();
 
         //figure out where we are at...
