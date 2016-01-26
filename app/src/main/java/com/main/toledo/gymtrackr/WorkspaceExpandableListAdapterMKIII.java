@@ -559,10 +559,10 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
         Circuit circuit = mWorkout.get(groupPosition);
 
         if(!mGroupIdMap.containsKey(circuit)) {
-            Log.d(logTag, "*****************************ATTENTION*******************************");
-            Log.d(logTag, "getGroupId() returned INVALID_ID for groupPosition: "
-                    + groupPosition + " NO ID FOR KEY CONTAINED IN GROUPHASHMAP");
-            Log.d(logTag, "*********************************************************************");
+            //Log.d(logTag, "*****************************ATTENTION*******************************");
+            //Log.d(logTag, "getGroupId() returned INVALID_ID for groupPosition: "
+            //        + groupPosition + " NO ID FOR KEY CONTAINED IN GROUPHASHMAP");
+            //Log.d(logTag, "*********************************************************************");
             return INVALID_ID;
         }
 
@@ -584,30 +584,30 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
     @Override
     public long getChildId(int groupPosition, int childPosition){
         if(groupPosition < 0 || groupPosition >= mGroupIdMap.size()){
-            Log.d(logTag, "*****************************ATTENTION*******************************");
-            Log.d(logTag, "getChildId() returned INVALID_ID for groupPosition: "
-                    + groupPosition + "GROUP OUT OF BOUNDS");
-            Log.d(logTag, "*********************************************************************");
+            //Log.d(logTag, "*****************************ATTENTION*******************************");
+            //Log.d(logTag, "getChildId() returned INVALID_ID for groupPosition: "
+            //        + groupPosition + "GROUP OUT OF BOUNDS");
+            //Log.d(logTag, "*********************************************************************");
             return INVALID_ID;
         }
         
         Circuit circuit = mWorkout.get(groupPosition);
 
         if(childPosition < 0 || childPosition >= circuit.getExercises().size()){
-            Log.d(logTag, "*****************************ATTENTION*******************************");
-            Log.d(logTag, "getChildId() returned INVALID_ID for groupPosition: "
-                    + groupPosition + " childPosition: " + childPosition + "CHILD OUT OF GROUP BOUNDS");
-            Log.d(logTag, "*********************************************************************");
+            //Log.d(logTag, "*****************************ATTENTION*******************************");
+            //Log.d(logTag, "getChildId() returned INVALID_ID for groupPosition: "
+            //        + groupPosition + " childPosition: " + childPosition + "CHILD OUT OF GROUP BOUNDS");
+            //Log.d(logTag, "*********************************************************************");
             return INVALID_ID;
         }
 
         Exercise exercise = circuit.getExercise(childPosition);
 
         if(!mChildIdMap.containsKey(exercise)) {
-            Log.d(logTag, "*****************************ATTENTION*******************************");
-            Log.d(logTag, "getChildId() returned INVALID_ID for groupPosition: "
-                    + groupPosition + " childPosition: " + childPosition + "NO ID FOR KEY CONTAINED IN HASHMAP");
-            Log.d(logTag, "*********************************************************************");
+            //Log.d(logTag, "*****************************ATTENTION*******************************");
+            //Log.d(logTag, "getChildId() returned INVALID_ID for groupPosition: "
+            //        + groupPosition + " childPosition: " + childPosition + "NO ID FOR KEY CONTAINED IN HASHMAP");
+            //Log.d(logTag, "*********************************************************************");
             return INVALID_ID;
         }
         return mChildIdMap.get(exercise);

@@ -2,7 +2,6 @@ package com.main.toledo.gymtrackr;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -21,6 +20,8 @@ public class WorkoutData {
     private Circuit mTempCircuit;
     private Exercise mTempExercise;
     private Exercise mToggledExercise;
+    private Circuit mFirstPlaceholderCircuit;
+    private Circuit mLastPlaceholderCircuit;
     //public static int STABLE_ID;
 
     //state data
@@ -60,9 +61,22 @@ public class WorkoutData {
         c.add(e);
         Workout.add(c);
         */
-        doStubs();
+
+        mFirstPlaceholderCircuit = WorkoutData.getNewPlaceholderCircuit();
+        mLastPlaceholderCircuit = WorkoutData.getNewPlaceholderCircuit();
+        //doStubs();
+        Workout.add(mFirstPlaceholderCircuit);
+        Workout.add(mLastPlaceholderCircuit);
     }
 
+    public boolean isCircuitAtPositionPlaceholder(int position){
+
+        if(position > Workout.size()-1){
+            return false;
+        }
+
+        return Workout.get(position) == mFirstPlaceholderCircuit || Workout.get(position) == mLastPlaceholderCircuit;
+    }
     private void doStubs(){
         Circuit circuitOne = new Circuit();
         circuitOne.setOpenStatus(true);
@@ -109,13 +123,13 @@ public class WorkoutData {
         circuitFive.add(new Exercise(3, "4", 0, 0, 0, 0, 0, -1));
         circuitFive.add(new Exercise());
 
-        Workout.add(WorkoutData.getNewPlaceholderCircuit());
+        Workout.add(mFirstPlaceholderCircuit);
         Workout.add(circuitOne);
         Workout.add(circuitTwo);
         Workout.add(circuitThree);
         Workout.add(circuitFour);
         Workout.add(circuitFive);
-        Workout.add(WorkoutData.getNewPlaceholderCircuit());
+        Workout.add(mLastPlaceholderCircuit);
     }
 
     public static WorkoutData get(Context c){
@@ -124,7 +138,14 @@ public class WorkoutData {
         }
         return sWorkspaceData;
     }
-
+    public static Circuit getNewOpenCircuitWithName(String name){
+        Circuit c = new Circuit();
+        c.setName(name);
+        c.setOpenStatus(true);
+        //c.add(new Exercise());
+        c.setType(Circuit.CircuitType.DATA);
+        return c;
+    }
     public static Circuit getClosedCircuitWithExercise(Exercise exercise){
         Circuit circuit = new Circuit();
         circuit.setOpenStatus(false);

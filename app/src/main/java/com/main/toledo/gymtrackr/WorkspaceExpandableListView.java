@@ -21,6 +21,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.AbsListView;
+import android.widget.ExpandableListView;
 
 import java.util.ArrayList;
 
@@ -119,6 +120,7 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
     private WorkspaceExpandableListAdapterMKIII mAdapter;
 
     //ITEM ADDITION VARS
+    private boolean mAddingCircuitFlag = false;
 
     private WorkspaceExpandableListAdapterMKIII.dragListener mListener = new WorkspaceExpandableListAdapterMKIII.dragListener(){
         @Override
@@ -156,14 +158,14 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
     }
 
     public void beginItemAddition(int type, int listY, MotionEvent event, float uiDraggableHeight){
-
+        printWorkoutData();
         mActivePointerId = event.getPointerId(0);
         DRAGGED_ITEM_TYPE = type;
         mDownY = listY - (int)uiDraggableHeight;
         //Log.d(logTag, "uidraggable height: " + uiDraggableHeight);
         mDragInProgress = true;
         mDragMode = true;
-        int position = pointToPosition(0, listY);         //disable scrolling for item placement
+        int position = pointToPosition(0, listY);
 
         //In the event we get an invalid position ( -1 ) from point to position,
         //decrease the Y value by an offset and attempt to get a view at that position
@@ -178,77 +180,83 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
         CURRENT_GROUP = getPackedPositionGroup(getExpandableListPosition(position));
         CURRENT_CHILD = getPackedPositionChild(getExpandableListPosition(position));
         CURRENT_GROUP_IS_OPEN = Workout.get(CURRENT_GROUP).isOpen();
-                /*
-        long packedPosition = getPackedPositionForChild(group, child);
-
-        Log.d(logTag, "Packed position: " + packedPosition);
-        int flatPosition = getFlatListPosition(packedPosition);
-
-        Log.d(logTag, "Flat position: " + flatPosition
-            +"Last visible position: "
-            +getLastVisiblePosition());
-
-        if(getChildAt(flatPosition) == null)Log.d(logTag, "child at flat position == null");
-
-        if(CURRENT_CHILD == -1){
-            //First view we encounter is a group header, we need to determine where we should place the new item
-            //we will add a new closed circuit before the current group
-            Log.d(logTag, "GROUP HEADER, SHOULD CRASH");
-        }
-
-        if(getPackedPositionForChild(CURRENT_GROUP, CURRENT_CHILD) == -1L){
-            //The position we want to add the new item to is not displayed on screen
-            Log.d(logTag, "cgroup: " + CURRENT_GROUP + " cchild: " + CURRENT_CHILD + " cgrpopn: " + CURRENT_GROUP_IS_OPEN);
-            getNeighborPositions();
-        } else {
-            //The position we want to add the new item to IS displayed on screen
-        }
-        */
-        //Log.d(logTag, "beginItemAddition()");
-        setOnScrollListener(null);
-        if (Workout.get(CURRENT_GROUP).isOpen() && CURRENT_CHILD != -1){
-            //add item to open circuit
-            Log.d(logTag, "adding item to open circuit");
-            mMobileItemId = mAdapter.addChild(CURRENT_GROUP, CURRENT_CHILD, WorkoutData.get(getContext()).getGenericExercise());
-            mAdapter.notifyDataSetChanged();
-            restoreListExpansion();
-        } else {
-            //add item to closed circuit
-            Log.d(logTag, "adding item to closed circuit");
-            mAdapter.addGroup(CURRENT_GROUP, WorkoutData.get(getContext()).getClosedCircuit());
-            mMobileItemId = mAdapter.addChild(CURRENT_GROUP, 0, WorkoutData.get(getContext()).getGenericExercise());
-            CURRENT_CHILD = 0;
-            CURRENT_GROUP_IS_OPEN = false;
-            mAdapter.notifyDataSetChanged();
-            restoreListExpansion();
-        }
-        post(new Runnable() {
-            @Override
-            public void run() {
-                //ACTUAL CODE long expLstPos = getExpandableListPosition(getPositionForView(getViewForID(mMobileItemId)));
-                //DEBUG
-                /*
-                View v = getViewForID(mMobileItemId);
-                int position;
-                if (v == null) {
-                    Log.d(logTag, "getView forID returned null!");
-                    position = getLastVisiblePosition();
-                } else {
-                    position = getPositionForView(v);
-                }
-
-                long expLstPos = getExpandableListPosition(position);
-                CURRENT_GROUP = getPackedPositionGroup(expLstPos);
-                CURRENT_CHILD = getPackedPositionChild(expLstPos);
-
-                CURRENT_GROUP_IS_OPEN = Workout.get(CURRENT_GROUP).isOpen();
-                */
-                startAdditionDrag();
+        Log.d(logTag, "Last position on list is G: " + CURRENT_GROUP + " C: " + CURRENT_CHILD);
+        setOnScrollListener(null);  //disable scrolling for item placement
+        if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
+            if (Workout.get(CURRENT_GROUP).isOpen() && CURRENT_CHILD != -1) {
+                //add item to open circuit
+                Log.d(logTag, "!!!!!!!!!!!!!!!!!!!!!!!!adding item to open circuit, current group " + CURRENT_GROUP + " current child " + CURRENT_CHILD);
+                mMobileItemId = mAdapter.addChild(CURRENT_GROUP, CURRENT_CHILD, WorkoutData.get(getContext()).getGenericExercise());
+                mAdapter.notifyDataSetChanged();
+                restoreListExpansion();
+            } else {
+                //add item to closed circuit
+                //if(WorkoutData.get(mContext).isCircuitAtPositionPlaceholder(CURRENT_GROUP))
+                mAdapter.addGroup(CURRENT_GROUP, WorkoutData.get(getContext()).getClosedCircuit());
+                mMobileItemId = mAdapter.addChild(CURRENT_GROUP, 0, WorkoutData.get(getContext()).getGenericExercise());
+                CURRENT_CHILD = 0;
+                CURRENT_GROUP_IS_OPEN = false;
+                mAdapter.notifyDataSetChanged();
+                Log.d(logTag, "!!!!!!!!!!!!!!!!!!!!!!!!adding item to closed circuit, id = " + mMobileItemId + " current group: " + CURRENT_GROUP);
+                printWorkoutData();
+                restoreListExpansion();
             }
-        });
+            /*
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    startAdditionDrag();
+                }
+            });
+            */
+            final ViewTreeObserver observer = getViewTreeObserver();
+            observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+                public boolean onPreDraw() {
 
+                    observer.removeOnPreDrawListener(this);
+
+                    View v = getViewForID(mMobileItemId);
+
+                    if (v != null)
+                        v.setVisibility(View.INVISIBLE);
+
+                    return true;
+                }
+            });
+            getNeighborPositions();
+            printTargetLocations();
+            updateNeighborIDsForCurrentPosition();
+            printTargetIds();
+            mTotalOffset = 0;
+
+
+        } else if(type == ExpandableListView.PACKED_POSITION_TYPE_GROUP){
+
+            ABOVE_VALID_GROUP = CURRENT_GROUP;
+            mTotalOffset = 0;
+            if(WorkoutData.get(mContext).isCircuitAtPositionPlaceholder(ABOVE_VALID_GROUP)){
+                //Above thing is placeholder, add before
+                //ABOVE_VALID_GROUP--;
+                addCircuit();
+                return;
+            }
+
+            ABOVE_GROUP_IS_OPEN = CURRENT_GROUP_IS_OPEN;
+            if(ABOVE_GROUP_IS_OPEN) {
+                mAboveItemId = mAdapter.getGroupId(ABOVE_VALID_GROUP);
+            } else {
+                mAboveItemId = mAdapter.getChildId(ABOVE_VALID_GROUP, 0);
+            }
+
+            mAddingCircuitFlag = true;
+
+            Log.d(logTag, "In group addition code.  above group = " + ABOVE_VALID_GROUP + "above id" + mAboveItemId);
+
+            //Log.d(logTag, "Above position is placeholder: " + WorkoutData.get(mContext).isCircuitAtPositionPlaceholder(ABOVE_VALID_GROUP));
+
+        }
     }
-
+    /*
     private void startAdditionDrag(){
         View selectedView = getViewForID(mMobileItemId);
 
@@ -273,7 +281,23 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
         //Log.d(logTag, "Above item Id" + mAboveItemId);
         mDragInProgress = true;
     }
-
+    */
+    public void printTargetIds(){
+        Log.d(logTag, "above id: " + mAboveItemId + " current id: " + mMobileItemId + " below id: " + mBelowItemId);
+    }
+    public void printWorkoutData(){
+        int cCount = 0;
+        int eCount;
+        for(Circuit c : Workout){
+            Log.d(logTag, "-" + cCount + "-Circuit: " + c.getName());
+            cCount++;
+            eCount = 0;
+            for(Exercise e : c.getExercises()){
+                Log.d(logTag, "--" + eCount + "-Exercise: " + e.getName());
+                eCount++;
+            }
+        }
+    }
     public void finishItemAddition(){
         post(new Runnable() {
             @Override
@@ -282,6 +306,7 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
                 mDragInProgress = false;
                 mDragMode = false;
                 mActivePointerId = INVALID_POINTER_ID;
+                mAddingCircuitFlag = false;
                 if (getViewForID(mMobileItemId) != null) {
                     getViewForID(mMobileItemId).setVisibility(VISIBLE);
                 } else {
@@ -289,6 +314,8 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
                 }
                 setOnScrollListener(mScrollListener);
                 invalidate();
+                Log.d(logTag, "Final item addition");
+                printWorkoutData();
             }
         });
     }
@@ -388,6 +415,7 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
         selectedView.setVisibility(INVISIBLE);
         getNeighborPositions();
         updateNeighborIDsForCurrentPosition();
+        printTargetIds();
         //Log.d(logTag, "Above item Id" + mAboveItemId);
         mDragInProgress = true;
     }
@@ -426,7 +454,6 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
 
                         invalidate();
 
-
                         return false;
                     }
                     break;
@@ -457,10 +484,10 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event){
-        Log.d(logTag, "touch event in interceptor");
+        //Log.d(logTag, "touch event in interceptor");
         if (event.getAction() == MotionEvent.ACTION_DOWN){
             mDownY = (int) event.getY();
-            Log.d(logTag, "mDownY set in onInterceptTouchEvent");
+            //Log.d(logTag, "mDownY set in onInterceptTouchEvent");
             mActivePointerId = event.getPointerId(0);
             onTouchEvent(event);
         } else {
@@ -469,18 +496,69 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
         return false;
     }
 
+    private void addCircuit(){
+        mMobileItemId = mAdapter.addGroup(ABOVE_VALID_GROUP, WorkoutData.getNewOpenCircuitWithName("AddedCircuit"));
+        mAdapter.addChild(ABOVE_VALID_GROUP, 0 , new Exercise());
+        Log.d(logTag, "Added circuits id: " + mMobileItemId);
+        mAdapter.notifyDataSetChanged();
+        mAddingCircuitFlag = false;
+        CURRENT_GROUP = ABOVE_VALID_GROUP;
+        CURRENT_CHILD = INVALID_POSITION;
+        CURRENT_GROUP_IS_OPEN = true;
+        getNeighborPositions();
+        updateNeighborIDsForCurrentPosition();
+
+        final ViewTreeObserver observer = getViewTreeObserver();
+        observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            public boolean onPreDraw() {
+
+                observer.removeOnPreDrawListener(this);
+
+                View v = getViewForID(mMobileItemId);
+
+                if (v != null)
+                    v.setVisibility(View.INVISIBLE);
+
+                return true;
+            }
+        });
+
+        Log.d(logTag, "Workout contents post circuit add: ");
+        printWorkoutData();
+    }
+    private void printTargetLocations(){
+        Log.d(logTag, "above group/position/open: " + ABOVE_VALID_GROUP + "/" + ABOVE_VALID_POSITION + "/" + ABOVE_GROUP_IS_OPEN);
+        Log.d(logTag, "current group/position/open: " + CURRENT_GROUP + "/" + CURRENT_CHILD + "/" + CURRENT_GROUP_IS_OPEN);
+        Log.d(logTag, "below group/position/open: " + BELOW_VALID_GROUP + "/" + BELOW_VALID_POSITION + "/" + BELOW_GROUP_IS_OPEN);
+    }
+
+    //TODO fix this
     private void handleAdditionCellSwitch(){
-        int deltaYTotal = mDownY + mLastEventY;;
+
+        //Log.d(logTag, "handleAdditionCellSwitch()");
+        //printTargetLocations();
+        int deltaYTotal = mDownY + mLastEventY;
+
         View belowView = getViewForID(mBelowItemId);
         final View mobileView = getViewForID(mMobileItemId);
         View aboveView = getViewForID(mAboveItemId);
+        //if(aboveView!=null)
+        //Log.d(logTag, "Delt y Totes: " + deltaYTotal + " Above view top: " + aboveView.getTop() + " mAboveID: " + mAboveItemId);
+        //Log.d(logTag, "Below is null " + (belowView==null));
 
-        boolean isBelow = (belowView != null) && (deltaYTotal > belowView.getTop());
-        boolean isAbove = (aboveView != null) && (deltaYTotal < aboveView.getTop());
+        boolean isBelow = (belowView != null) && (deltaYTotal > belowView.getTop()) && !WorkoutData.get(mContext).isCircuitAtPositionPlaceholder(BELOW_VALID_GROUP);
+        boolean isAbove = (aboveView != null) && (deltaYTotal < aboveView.getTop()) && !WorkoutData.get(mContext).isCircuitAtPositionPlaceholder(ABOVE_VALID_GROUP);
         //i like the use above and below thing
         if (isBelow || isAbove) {
 
-            Log.d(logTag, "is below: " + isBelow + "; is above: " + isAbove);
+            if(mAddingCircuitFlag){
+                Log.d(logTag, "Adding circuit...");
+                addCircuit();
+                //Now we transition between adding and dragging...
+                return;
+            }
+
+            Log.d(logTag, "Handleadditioncellswitch: is below: " + isBelow + "; is above: " + isAbove);
             //Log.d(logTag, "moving from circuit-group: " + CURRENT_GROUP + "-" + CURRENT_CHILD);
             final long switchItemID = isBelow ? mBelowItemId : mAboveItemId;
             final long currentId = mMobileItemId;
@@ -513,7 +591,7 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
             //    for(Exercise e : c.getExercises())
             //       Log.d(logTag, c.getName() + " " + e.getName());
 
-            mobileView.setVisibility(View.VISIBLE);
+            if(mobileView!=null)mobileView.setVisibility(View.VISIBLE);
 
             mAdapter.notifyDataSetChanged();
             if(DRAGGED_ITEM_TYPE == PACKED_POSITION_TYPE_CHILD)restoreListExpansion();
@@ -530,6 +608,7 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
             //Alteration 6/5
             //mobileView.setVisibility(View.VISIBLE);
             //switchView.setVisibility(View.INVISIBLE);
+            /*
             Log.d(logTag, "getNeighborPositions() called in handleAdditionCellSwitch");
             Log.d(logTag, "Current item ID: " + currentId);
             Log.d(logTag, "PreDraw Switch item ID: " + switchItemID);
@@ -540,47 +619,67 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
                     + ABOVE_VALID_POSITION);
 
             Log.d(logTag, "Above ID: " + mAdapter.getChildId(ABOVE_VALID_GROUP, ABOVE_VALID_POSITION));
+            */
             getNeighborPositions();
             updateNeighborIDsForCurrentPosition();
 
             final ViewTreeObserver observer = getViewTreeObserver();
-            observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-                public boolean onPreDraw() {
+            if(DRAGGED_ITEM_TYPE != ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
+                observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+                    public boolean onPreDraw() {
 
-                    observer.removeOnPreDrawListener(this);
+                        observer.removeOnPreDrawListener(this);
 
-                    //testflag = true;
+                        //testflag = true;
 
 
-                    View v = getViewForID(currentId);
+                        View v = getViewForID(currentId);
 
-                    if (v != null)
-                        v.setVisibility(View.INVISIBLE);
-                    else
-                        Log.d(logTag, "VIEW IS NULL, TERRIBLE THINGS, LINE 414 WELV");
+                        if (v != null)
+                            v.setVisibility(View.INVISIBLE);
+                        else
+                            Log.d(logTag, "VIEW IS NULL, TERRIBLE THINGS, LINE 414 WELV");
 
-                    View switchView = getViewForID(switchItemID, true);
-                    if(switchView != null) {
-                        //testflag = false;
-                        int switchViewNewTop = switchView.getTop();
-                        int delta = switchViewStartTop - switchViewNewTop;
+                        View switchView = getViewForID(switchItemID);
+                        if (switchView != null) {
+                            //testflag = false;
+                            int switchViewNewTop = switchView.getTop();
+                            int delta = switchViewStartTop - switchViewNewTop;
 
-                        switchView.setTranslationY(delta);
+                            switchView.setTranslationY(delta);
 
-                        ObjectAnimator animator = ObjectAnimator.ofFloat(switchView,
-                                View.TRANSLATION_Y, 0);
-                        animator.setDuration(MOVE_DURATION);
-                        animator.start();
-                        //ANIMATION_FLAG = OPEN_TO_OPEN;
+                            ObjectAnimator animator = ObjectAnimator.ofFloat(switchView,
+                                    View.TRANSLATION_Y, 0);
+                            animator.setDuration(MOVE_DURATION);
+                            animator.start();
+                            //ANIMATION_FLAG = OPEN_TO_OPEN;
+                        }
+                        return true;
                     }
-                    return true;
-                }
-            });
+                });
+            } else {
+                observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+                    public boolean onPreDraw() {
+
+                        observer.removeOnPreDrawListener(this);
+
+                        View v = getViewForID(currentId);
+
+                        if (v != null)
+                            v.setVisibility(View.INVISIBLE);
+                        else
+                            Log.d(logTag, "VIEW IS NULL, TERRIBLE THINGS, LINE 414 WELV");
+
+                        return true;
+                    }
+                });
+            }
         }
     }
 
     private void handleCellSwitch() {
         //Log.d(logTag, "handleCellSwitch()");
+        //printTargetLocations();
         final int deltaY = mLastEventY - mDownY;
         //Log.d(logTag, "deltaY = " + mLastEventY + " - " + mDownY + " = " + deltaY);
         int deltaYTotal = mHoverCellOriginalBounds.top + mTotalOffset + deltaY;
@@ -599,12 +698,12 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
         */
         //if(belowView == null)Log.d(logTag, "below null + below id: " + mBelowItemId);
 
-        boolean isBelow = (belowView != null) && (deltaYTotal > belowView.getTop());
-        boolean isAbove = (aboveView != null) && (deltaYTotal < aboveView.getTop());
+        boolean isBelow = (belowView != null) && (deltaYTotal > belowView.getTop()) && !WorkoutData.get(mContext).isCircuitAtPositionPlaceholder(BELOW_VALID_GROUP);
+        boolean isAbove = (aboveView != null) && (deltaYTotal < aboveView.getTop()) && !WorkoutData.get(mContext).isCircuitAtPositionPlaceholder(ABOVE_VALID_GROUP);
         //i like the use above and below thing
         if (isBelow || isAbove) {
 
-            //Log.d(logTag, "is below: " + isBelow + "; is above: " + isAbove);
+            Log.d(logTag, "is below: " + isBelow + "; is above: " + isAbove);
             //Log.d(logTag, "moving from circuit-group: " + CURRENT_GROUP + "-" + CURRENT_CHILD);
             final long switchItemID = isBelow ? mBelowItemId : mAboveItemId;
             final long currentId = mMobileItemId;
@@ -627,7 +726,7 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
             //final View lastView = getChildAt(getChildCount() -1); //Used for special case animations
             //final View secondToLastView = getChildAt(getChildCount() - 2); //Used for special case animations
             //lastView.setHasTransientState(true);
-
+            printTargetLocations();
             if(isBelow) moveElement(BELOW);
 
             if(isAbove) moveElement(ABOVE);
@@ -736,7 +835,7 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
     }
 
     private void moveElement(int direction) {
-
+        Log.d(logTag, "MOVE CALLED.");
         int TARGET_GROUP;
         int TARGET_POSITION;
         boolean TARGET_GROUP_IS_OPEN;
@@ -770,7 +869,7 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
                     } else {
                         //MOVING TO NEW CLOSED GROUP
                         //\\\WorkoutData.get(mContext).placeClosedCircuitWithExercise(TARGET_GROUP, temp);
-
+                        Log.d(logTag, "TG: " + TARGET_GROUP);
                         mAdapter.addGroup(TARGET_GROUP, WorkoutData.getClosedCircuitWithExercise(temp));
 
                         if (CURRENT_GROUP_IS_OPEN) {
@@ -855,11 +954,15 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
                         } else {
                             //\\\WorkoutData.get(mContext).placeClosedCircuitWithExercise(TARGET_GROUP + 1, temp);
                             mAdapter.addGroup(TARGET_GROUP + 1, WorkoutData.getClosedCircuitWithExercise(temp));
-                            Workout.get(CURRENT_GROUP).removeExercise(CURRENT_CHILD);
+
+                            if(!WorkoutData.get(mContext).isCircuitAtPositionPlaceholder(CURRENT_GROUP)) {
+                                Log.d(logTag, "CG = " + CURRENT_GROUP + " CC = " + CURRENT_CHILD);
+                                Workout.get(CURRENT_GROUP).removeExercise(CURRENT_CHILD);
+                                mAdapter.removeGroup(CURRENT_GROUP);
+                            }
                             //closed to closed
                             //Log.d(logTag, "CLOSED TO CLOSED");
                             //\\\Workout.remove(CURRENT_GROUP);
-                            mAdapter.removeGroup(CURRENT_GROUP);
                         }
                         CURRENT_GROUP_IS_OPEN = false;
                         CURRENT_GROUP = TARGET_GROUP;

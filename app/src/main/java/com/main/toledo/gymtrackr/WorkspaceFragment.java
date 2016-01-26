@@ -160,8 +160,6 @@ public class WorkspaceFragment extends Fragment {
                         WindowManager mWindowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
                         mWindowManager.addView(UIDraggable, mWindowParams);
 
-                        //Todo readability: what is 2?
-
                         //((WorkspaceActivity) getActivity()).ListFragment.workspaceListView.mDraggedItemType = 2;
                         //((WorkspaceActivity) getActivity()).ListFragment.workspaceListView.setDragSpacing(200);
                         //((WorkspaceActivity) getActivity()).ListFragment.workspaceListView.mCurrentXPos = 150;
@@ -172,8 +170,8 @@ public class WorkspaceFragment extends Fragment {
                         if (UIDraggable != null) {
                             //Log.d(logTag, "in move in fragment");
                             WindowManager.LayoutParams layoutParams = (WindowManager.LayoutParams) UIDraggable.getLayoutParams();
-                            layoutParams.x = (int)event.getX() - 700;
-                            layoutParams.y = (int)event.getY() + 650;
+                            layoutParams.x = (int)x - 700;
+                            layoutParams.y = (int)y + 650;
                             WindowManager mWindowManager = (WindowManager) getActivity()
                                     .getSystemService(Context.WINDOW_SERVICE);
                             mWindowManager.updateViewLayout(UIDraggable, layoutParams);
@@ -273,13 +271,25 @@ public class WorkspaceFragment extends Fragment {
                     case MotionEvent.ACTION_MOVE: {
                         if (UIDraggable != null) {
                             WindowManager.LayoutParams layoutParams = (WindowManager.LayoutParams) UIDraggable.getLayoutParams();
-                            layoutParams.x = (int) event.getX() - 700;
-                            layoutParams.y = (int) event.getY() + 650;
+                            layoutParams.x = (int)x - 350;
+                            layoutParams.y = (int)y + 650;
                             WindowManager mWindowManager = (WindowManager) getActivity()
                                     .getSystemService(Context.WINDOW_SERVICE);
                             mWindowManager.updateViewLayout(UIDraggable, layoutParams);
 
                             //TODO make scalable
+                            if(y < 0){
+                                //Log.d(logTag, "Y is less than 0, mAddingItem = " + mAddingItem);
+                                if(!mAddingItem){
+                                    workspaceListView.beginItemAddition(ExpandableListView.PACKED_POSITION_TYPE_GROUP, (int)(workspaceListView.getBottom() - y), event, UIDraggable.getHeight());
+                                    mAddingItem = true;
+                                    //add item initiate
+                                } else {
+                                    //drag item
+                                    //Log.d(logTag, "should call touch event in listview...");
+                                    workspaceListView.onTouchEvent(event);
+                                }
+                            }
 
                             //((WorkspaceActivity) getActivity()).ListFragment.workspaceListView.mCurrentYPos = (int) y + 1300;
                             //((WorkspaceActivity) getActivity()).ListFragment.workspaceListView.dragHandling(false);
@@ -288,7 +298,7 @@ public class WorkspaceFragment extends Fragment {
                     }
 
                     case MotionEvent.ACTION_UP: {
-
+                        Log.d(logTag, "Up called in move in circuit");
                         if (UIDraggable != null) {
                             UIDraggable.setVisibility(View.GONE);
                             WindowManager wm = (WindowManager) getActivity().getSystemService(Context.WINDOW_SERVICE);
@@ -298,6 +308,12 @@ public class WorkspaceFragment extends Fragment {
 
                             //((WorkspaceActivity) getActivity()).ListFragment.workspaceListView.closeUI();
                             //((WorkspaceActivity) getActivity()).ListFragment.workspaceListView.placeNewCircuit();
+
+                            if(mAddingItem){
+                                //Cleanup code for item addition goes here
+                                workspaceListView.finishItemAddition();
+                                mAddingItem = false;
+                            }
 
                         }
                     }
