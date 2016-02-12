@@ -10,20 +10,18 @@ import java.util.Date;
  * Created by Adam on 2/11/2015.
  * This singleton will be used to display data on the workspace.
  */
+
 public class WorkoutData {
     //private HashMap<String, ArrayList<Exercise>> WorkoutMap;
-    private ArrayList<Circuit> Workout = new ArrayList<Circuit>();
+    private static DatabaseWrapper sDatabaseWrapper = new DatabaseWrapper();
+    private ArrayList<Circuit> mWorkout = new ArrayList<Circuit>();
     private int mPlanId;
     private String m_name;
     private static WorkoutData sWorkspaceData;
-    private Context mAppContext;
-    private Circuit mTempCircuit;
-    private Exercise mTempExercise;
-    private Exercise mToggledExercise;
     private Circuit mFirstPlaceholderCircuit;
     private Circuit mLastPlaceholderCircuit;
-    //public static int STABLE_ID;
-
+    private final static String GENERIC_NAME = "Generic 01";
+    private final static String PLACEHOLDER_CIRCUIT_NAME = "...";
     //state data
     //BrowseCreate Transition
     private String mAddedExerciseName;
@@ -32,7 +30,7 @@ public class WorkoutData {
     private String mLastFilter2 = null;
     //workspace
     private int mState;
-    private String mPlanName;
+    //private String mPlanName;
     private int mStateCircuit;
     private boolean mStateCircuitOpen;
     private int mBrowseState = 0;
@@ -47,9 +45,10 @@ public class WorkoutData {
     private Drawable mHistoryDivider;
     private boolean firstLoad = true;
 
+    private WorkspaceFragment.swapHandler mSwapHandler;
+
     private WorkoutData(Context appContext){
         //adds initial values
-        mAppContext = appContext;
         initialize();
     }
 
@@ -59,77 +58,48 @@ public class WorkoutData {
         c.setOpenStatus(false);
         Exercise e = new Exercise();
         c.add(e);
-        Workout.add(c);
+        mWorkout.add(c);
         */
-
+        mWorkout.clear();
         mFirstPlaceholderCircuit = WorkoutData.getNewPlaceholderCircuit();
         mLastPlaceholderCircuit = WorkoutData.getNewPlaceholderCircuit();
         //doStubs();
-        Workout.add(mFirstPlaceholderCircuit);
-        Workout.add(mLastPlaceholderCircuit);
+        addPlaceholders();
+    }
+    /*
+     * DATABASE ACCESS METHODS
+     */
+    public void savePlan(){
+        sDatabaseWrapper.saveEntirePlan(crapNewPlan());
     }
 
-    public boolean isCircuitAtPositionPlaceholder(int position){
+    public void saveHistory(){
+        sDatabaseWrapper.addExerciseToHistory(crapHistory());
+    }
 
-        if(position > Workout.size()-1){
+    public void createNewPlanWithName(String planName){
+        Plan p = new Plan();
+        p.setName(planName);
+        Circuit_temp[] circuits = new Circuit_temp[0];
+        p.setCircuits(circuits);
+        sDatabaseWrapper.saveEntirePlan(p);
+    }
+
+    public String[] pullPlanList(){
+        return sDatabaseWrapper.loadPlanNames();
+    }
+
+    public void loadPlan(String planName){
+        eatPlan(sDatabaseWrapper.loadEntirePlan(planName), true);
+    }
+    /*
+     * END DATABASE ACCESS METHODS
+     */
+    public boolean isCircuitAtPositionPlaceholder(int position){
+        if(position > mWorkout.size()-1){
             return false;
         }
-
-        return Workout.get(position) == mFirstPlaceholderCircuit || Workout.get(position) == mLastPlaceholderCircuit;
-    }
-    private void doStubs(){
-        Circuit circuitOne = new Circuit();
-        circuitOne.setOpenStatus(true);
-        circuitOne.setName("Circuit One");
-        circuitOne.add(new Exercise(0, "1", 0, 0, 0, 0, 0, -1));
-        circuitOne.add(new Exercise(1, "2", 0, 0, 0, 0, 0, -1));
-        circuitOne.add(new Exercise(2, "3", 0, 0, 0, 0, 0, -1));
-        circuitOne.add(new Exercise(3, "4", 0, 0, 0, 0, 0, -1));
-        circuitOne.add(new Exercise());
-
-        Circuit circuitTwo = new Circuit();
-        circuitTwo.setOpenStatus(true);
-        circuitTwo.setName("Circuit Two");
-        circuitTwo.add(new Exercise(0, "1", 0, 0, 0, 0, 0, -1));
-        circuitTwo.add(new Exercise(1, "2", 0, 0, 0, 0, 0, -1));
-        circuitTwo.add(new Exercise(2, "3", 0, 0, 0, 0, 0, -1));
-        circuitTwo.add(new Exercise(3, "4", 0, 0, 0, 0, 0, -1));
-        circuitTwo.add(new Exercise());
-
-        Circuit circuitThree = new Circuit();
-        circuitThree.setOpenStatus(true);
-        circuitThree.setName("Circuit Three");
-        circuitThree.add(new Exercise(0, "1", 0, 0, 0, 0, 0, -1));
-        circuitThree.add(new Exercise(1, "2", 0, 0, 0, 0, 0, -1));
-        circuitThree.add(new Exercise(2, "3", 0, 0, 0, 0, 0, -1));
-        circuitThree.add(new Exercise(3, "4", 0, 0, 0, 0, 0, -1));
-        circuitThree.add(new Exercise());
-
-        Circuit circuitFour = new Circuit();
-        circuitFour.setOpenStatus(true);
-        circuitFour.setName("Circuit Four");
-        circuitFour.add(new Exercise(0, "1", 0, 0, 0, 0, 0, -1));
-        circuitFour.add(new Exercise(1, "2", 0, 0, 0, 0, 0, -1));
-        circuitFour.add(new Exercise(2, "3", 0, 0, 0, 0, 0, -1));
-        circuitFour.add(new Exercise(3, "4", 0, 0, 0, 0, 0, -1));
-        circuitFour.add(new Exercise());
-
-        Circuit circuitFive = new Circuit();
-        circuitFive.setOpenStatus(true);
-        circuitFive.setName("Circuit Five");
-        circuitFive.add(new Exercise(0, "1", 0, 0, 0, 0, 0, -1));
-        circuitFive.add(new Exercise(1, "2", 0, 0, 0, 0, 0, -1));
-        circuitFive.add(new Exercise(2, "3", 0, 0, 0, 0, 0, -1));
-        circuitFive.add(new Exercise(3, "4", 0, 0, 0, 0, 0, -1));
-        circuitFive.add(new Exercise());
-
-        Workout.add(mFirstPlaceholderCircuit);
-        Workout.add(circuitOne);
-        Workout.add(circuitTwo);
-        Workout.add(circuitThree);
-        Workout.add(circuitFour);
-        Workout.add(circuitFive);
-        Workout.add(mLastPlaceholderCircuit);
+        return mWorkout.get(position) == mFirstPlaceholderCircuit || mWorkout.get(position) == mLastPlaceholderCircuit;
     }
 
     public static WorkoutData get(Context c){
@@ -142,19 +112,14 @@ public class WorkoutData {
         Circuit c = new Circuit();
         c.setName(name);
         c.setOpenStatus(true);
-        //c.add(new Exercise());
+        c.setExpanded(false);
+        c.add(new Exercise());
         c.setType(Circuit.CircuitType.DATA);
         return c;
     }
-    public static Circuit getClosedCircuitWithExercise(Exercise exercise){
-        Circuit circuit = new Circuit();
-        circuit.setOpenStatus(false);
-        circuit.add(exercise);
-        circuit.setType(Circuit.CircuitType.DATA);
-        return circuit;
-    }
 
-    public Circuit getClosedCircuit(){
+
+    public static Circuit getClosedCircuit(){
         Circuit c = new Circuit();
         c.setOpenStatus(false);
         c.setType(Circuit.CircuitType.DATA);
@@ -164,69 +129,32 @@ public class WorkoutData {
     public static Circuit getNewPlaceholderCircuit(){
         Circuit circuit = new Circuit();
         circuit.setOpenStatus(false);
-        circuit.setName("...");
+        circuit.setName(PLACEHOLDER_CIRCUIT_NAME);
         circuit.setType(Circuit.CircuitType.PLACEHOLDER);
         return circuit;
     }
 
     public ArrayList<Circuit> getWorkout(){
-        return Workout;
+        return mWorkout;
     }
 
-    public void addExerciseToOpenCircuit(Exercise e, int circuitNumber){
 
-        int circuitSize = Workout.get(circuitNumber).getSize();
-        //adds exercise to second to last position
-        Workout.get(circuitNumber).add(circuitSize - 1, e);
-        //Workout.get(circuitNumber).isNotLast();
+    public void setSwapHandler(WorkspaceFragment.swapHandler handler){
+        mSwapHandler = handler;
+    }
 
-        if (Workout.get(circuitNumber).getName() == "Placeholder"){
-            Workout.get(circuitNumber).setName("Circuit " + circuitNumber);
-            Circuit c = new Circuit();
-            Workout.add(c);
+    public void swap(Exercise exerciseToSwap){
+        if(mSwapHandler != null){
+            mSwapHandler.swap(exerciseToSwap);
+            mSwapHandler = null;
         }
     }
-    //adds a new open circuitworkspaceListView
-    public void addCircuit(int circuitNumber){
-        Circuit c = new Circuit();
-        c.setName("Circuit " + circuitNumber);
-        c.add(new Exercise());
-        c.setOpenStatus(true);
-        Workout.add(circuitNumber, c);
-    }
-    //adds a closed circuit, e.g. a circuit with only one exercise
-    public void addClosedCircuit(Exercise e, int circuitNumber){
-        Circuit c = new Circuit();
-        c.setOpenStatus(false);
-        c.add(e);
-        Workout.add(circuitNumber, c);
-    }
 
-    public void placeClosedCircuitWithExercise(int circuitPosition, Exercise exercise){
-        Circuit c = new Circuit();
-        c.setOpenStatus(false);
-        c.add(exercise);
-        Workout.add(circuitPosition, c);
-    }
+    /*
 
+    */
 
-
-    public void setToggledExerciseExplicit(Exercise e){
-        mToggledExercise = e;
-    }
-
-    public void clearToggledExercise(){ mToggledExercise = null;}
-
-    public boolean isAnExerciseToggled(){
-        if (mToggledExercise == null){
-            return false;
-        }
-        return true;
-    }
-
-    public Exercise getToggledExercise(){return mToggledExercise;}
-
-    public Exercise getCopyExercise(Exercise originalExercise){
+    public static Exercise getCopyExercise(Exercise originalExercise){
         Exercise copyExercise = new Exercise();
         copyExercise.setName(originalExercise.getName());
         copyExercise.setEquipment(originalExercise.getEquipment());
@@ -254,22 +182,20 @@ public class WorkoutData {
         return copyExercise;
     }
 
-    public void setTempExercise(int circuit, int exercise){
-        mTempExercise = Workout.get(circuit).getExercise(exercise);
-        Workout.get(circuit).removeExercise(exercise);
-        if (!Workout.get(circuit).isOpen()){
-            Workout.remove(circuit);
+    public static Circuit getCopyCircuit(Circuit originalCircuit){
+        Circuit copyCircuit = new Circuit();
+        copyCircuit.setName(originalCircuit.getName());
+        copyCircuit.setOpenStatus(originalCircuit.isOpen());
+        for(Exercise e: originalCircuit.getExercises()){
+            //Log.d("singleton", "Adding exercise " + e.getName() + " to copy circuit");
+            copyCircuit.add(getCopyExercise(e));
         }
+        return copyCircuit;
     }
 
-    public void placeTempExercise(int circuit, int exercise){
-        Workout.get(circuit).add(exercise, mTempExercise);
-        mTempExercise = null;
-    }
-
-    public Exercise getGenericExercise(){
+    public static Exercise getGenericExercise(){
         Exercise generic = new Exercise();
-        generic.setName("Generic 01");
+        generic.setName(GENERIC_NAME);
 
         Metric reps = new Metric();
         reps.setType(metricType.REPS);
@@ -286,47 +212,45 @@ public class WorkoutData {
 
         return generic;
     }
+    /*
 
-    public void setTempCircuit(int circuit){
-        mTempCircuit = Workout.get(circuit);
-        Workout.remove(circuit);
+    */
+    public void removePlaceholders(){
+        mWorkout.remove(mWorkout.size() - 1);
+        mWorkout.remove(0);
     }
-    public void placeTempCircuit(int circuit){
-        Workout.add(circuit, mTempCircuit);
-        mTempCircuit = null;
-    }
-    public void placeNewCircuit(int circuit){
-        Circuit c = new Circuit();
-        c.setName("New Circuit");
-        c.add(new Exercise());
-        c.setOpenStatus(true);
-        Workout.add(circuit, c);
+    public void addPlaceholders(){
+        mWorkout.add(0, mFirstPlaceholderCircuit);
+        mWorkout.add(mLastPlaceholderCircuit);
     }
     //newPlan
     public Plan crapNewPlan(){
-
+        //removePlaceholders();
         Plan plan = new Plan();
         //minus one for the placeholder at end
         plan.setName(m_name);
         plan.setPlanId(mPlanId);
-        Circuit_temp[] circuits = new Circuit_temp[Workout.size() - 1];
-        //Because Kodie hates arraylists
+        Circuit_temp[] circuits = new Circuit_temp[mWorkout.size() - 1];
+
         //for each circuit
         //plan.setPlanId(mPlanId);
-        for(int i = 0; i < Workout.size() - 1; i++){
+        for(int i = 0; i < mWorkout.size() - 1; i++){
+
+            //if(!mWorkout.get(i).isOpen() && mWorkout.get(i).getExercises().get(0).getName().equals(GENERIC_NAME)) continue;
+
             Circuit_temp cTemp = new Circuit_temp();
             circuits[i] = cTemp;
-            if (Workout.get(i).getName() != null) {
-                circuits[i].setName(Workout.get(i).getName());
+            if (mWorkout.get(i).getName() != null) {
+                circuits[i].setName(mWorkout.get(i).getName());
             }
-            circuits[i].setOpen(Workout.get(i).isOpen());
+            circuits[i].setOpen(mWorkout.get(i).isOpen());
             circuits[i].setSequence(i);
             //setup to go through exercises
-            int numExercises = Workout.get(i).getExercises().size();
+            int numExercises = mWorkout.get(i).getExercises().size();
             ArrayList<Exercise> exerciseArrayList;
-            exerciseArrayList = Workout.get(i).getExercises();
+            exerciseArrayList = mWorkout.get(i).getExercises();
             //instantiates exercise array to put into plan
-            if(Workout.get(i).isOpen()) { //handles open circuit case
+            if(mWorkout.get(i).isOpen()) { //handles open circuit case
                 //open circuit exercises equal to size - 1 because of placeholder value
                 Exercise[] exercisesArray = new Exercise[numExercises - 1];
                 for(int j = 0; j < numExercises; j++) {
@@ -394,6 +318,7 @@ public class WorkoutData {
         plan.setCircuits(circuits);
         //debug shit
         //end debug shit
+        //addPlaceholders();
         return plan;
     }
 
@@ -452,17 +377,17 @@ public class WorkoutData {
                 c_new.add(new Exercise());
             }
             if(!(!c_new.isOpen() && c_new.getExercises().size()== 0))
-                                                  Workout.add(c_new);
+                                                  mWorkout.add(c_new);
         }
         //Log.d("EAT PLAN TESTS", "COPY COMPLETED");
         initialize();
-
     }
+
     public ExerciseHistory[] crapHistory(){
         //Log.d("SAVE TESTS", "SAVE TO HISTORY CALLED");
         ArrayList<ExerciseHistory> tempExerciseHolder = new ArrayList<>();
         //Pull all workout exercises into temp array
-        for(Circuit c : Workout){
+        for(Circuit c : mWorkout){
             for (Exercise e : c.getExercises()){
                 if (e.isSaveToHistorySet()){
                     //Log.d("SAVE TESTS", e.getName() + " " + e.getId() + " IS BEING DIGESTED INTO EH");
@@ -514,12 +439,13 @@ public class WorkoutData {
 
         return exerciseHistory;
     }
+
     public boolean isEmpty(){
         boolean empty = true;
-        if(Workout.get(0).getExercises().size()>1){
+        if(mWorkout.get(0).getExercises().size()>1){
             empty = false;
         }
-        if(Workout.size() > 1){
+        if(mWorkout.size() > 1){
             empty = false;
         }
         return empty;
@@ -528,8 +454,8 @@ public class WorkoutData {
     public void exerciseRemoved(int id){
         ArrayList<Integer> circuitsToRemove = new ArrayList<>();
 
-        for(int i = 0; i<Workout.size();i++) {
-            Circuit c = Workout.get(i);         //for each circuit
+        for(int i = 0; i< mWorkout.size();i++) {
+            Circuit c = mWorkout.get(i);         //for each circuit
             for (int j = c.getSize()-1; j>=0; j--) {   //for each exercise
                 Exercise e = c.getExercise(j);
                 if (e.getId() == id) {  //if the exercise id = the removed exercise id
@@ -542,11 +468,12 @@ public class WorkoutData {
         }
         for(int i = circuitsToRemove.size()-1; i>=0; i--){
             int j = circuitsToRemove.get(i);
-            Workout.remove(j);
+            mWorkout.remove(j);
         }
     }
+    /*
     public void clearCheckedExercises(){
-        for(Circuit c : Workout){
+        for(Circuit c : mWorkout){
             ArrayList<Exercise> exercises = c.getExercises();
             int numExercises = exercises.size();
             for(int j = numExercises-1; j>=0; j--){
@@ -555,20 +482,20 @@ public class WorkoutData {
                 }
             }
         }
-        int length = Workout.size() - 1;
+        int length = mWorkout.size() - 1;
         for(int i = length-1; i>=0; i-- ){
-            Circuit c = Workout.get(i);
+            Circuit c = mWorkout.get(i);
             int numExercises = c.getExercises().size();
             if(!c.isOpen()&&(numExercises == 0))
-                Workout.remove(i);
+                mWorkout.remove(i);
         }
     }
-
+    */
     public void clear(){
-        Workout.clear();
+        mWorkout.clear();
         m_name = "";
         mPlanId = -1;
-        mToggledExercise = null;
+        //mToggledExercise = null;
     }
 
     public void setWorkoutState(int state){
@@ -579,19 +506,19 @@ public class WorkoutData {
         return mState;
     }
 
-    public void setWorkoutPlanName(String name){mPlanName = name;}
+    //public void setWorkoutPlanName(String name){mPlanName = name;}
 
-    public String getWorkoutPlanName(){return mPlanName;}
+    //public String getWorkoutPlanName(){return mPlanName;}
 
     public void setBrowseState(int state){mBrowseState = state;}
 
     public int getBrowseState(){return mBrowseState;}
 
-    public void setStateCircuit(int i){mStateCircuit = i;}
+    //public void setStateCircuit(int i){mStateCircuit = i;}
 
     public int getStateCircuit(){return mStateCircuit;}
 
-    public void setStateCircuitOpenStatus(boolean status){mStateCircuitOpen = status;}
+    //public void setStateCircuitOpenStatus(boolean status){mStateCircuitOpen = status;}
 
     public boolean isStateCircuitOpen(){return mStateCircuitOpen;}
 
@@ -631,13 +558,139 @@ public class WorkoutData {
 
     //HISTORY THINGS
 
-    public void setFirstLoad(boolean b){firstLoad = b;}
-    public boolean getFirstLoad(){return firstLoad;}
+    //public void setFirstLoad(boolean b){firstLoad = b;}
+    //public boolean getFirstLoad(){return firstLoad;}
 
-    public void setDividerHeight(int height){mHistoryDividerHeight = height;}
-    public int getDividerHeight(){return mHistoryDividerHeight;}
+    //public void setDividerHeight(int height){mHistoryDividerHeight = height;}
+    //public int getDividerHeight(){return mHistoryDividerHeight;}
 
-    public void setHistoryDivider(Drawable divider){mHistoryDivider = divider;}
-    public Drawable getHistoryDivider(){return mHistoryDivider;}
+    //public void setHistoryDivider(Drawable divider){mHistoryDivider = divider;}
+    //public Drawable getHistoryDivider(){return mHistoryDivider;}
 
 }
+/*
+
+NOW ENTERING CONVENIENCE METHOD PURGATORY
+
+private void doStubs(){
+        Circuit circuitOne = new Circuit();
+        circuitOne.setOpenStatus(true);
+        circuitOne.setName("Circuit One");
+        circuitOne.add(new Exercise(0, "1", 0, 0, 0, 0, 0, -1));
+        circuitOne.add(new Exercise(1, "2", 0, 0, 0, 0, 0, -1));
+        circuitOne.add(new Exercise(2, "3", 0, 0, 0, 0, 0, -1));
+        circuitOne.add(new Exercise(3, "4", 0, 0, 0, 0, 0, -1));
+        circuitOne.add(new Exercise());
+
+        Circuit circuitTwo = new Circuit();
+        circuitTwo.setOpenStatus(true);
+        circuitTwo.setName("Circuit Two");
+        circuitTwo.add(new Exercise(0, "1", 0, 0, 0, 0, 0, -1));
+        circuitTwo.add(new Exercise(1, "2", 0, 0, 0, 0, 0, -1));
+        circuitTwo.add(new Exercise(2, "3", 0, 0, 0, 0, 0, -1));
+        circuitTwo.add(new Exercise(3, "4", 0, 0, 0, 0, 0, -1));
+        circuitTwo.add(new Exercise());
+
+        Circuit circuitThree = new Circuit();
+        circuitThree.setOpenStatus(true);
+        circuitThree.setName("Circuit Three");
+        circuitThree.add(new Exercise(0, "1", 0, 0, 0, 0, 0, -1));
+        circuitThree.add(new Exercise(1, "2", 0, 0, 0, 0, 0, -1));
+        circuitThree.add(new Exercise(2, "3", 0, 0, 0, 0, 0, -1));
+        circuitThree.add(new Exercise(3, "4", 0, 0, 0, 0, 0, -1));
+        circuitThree.add(new Exercise());
+
+        Circuit circuitFour = new Circuit();
+        circuitFour.setOpenStatus(true);
+        circuitFour.setName("Circuit Four");
+        circuitFour.add(new Exercise(0, "1", 0, 0, 0, 0, 0, -1));
+        circuitFour.add(new Exercise(1, "2", 0, 0, 0, 0, 0, -1));
+        circuitFour.add(new Exercise(2, "3", 0, 0, 0, 0, 0, -1));
+        circuitFour.add(new Exercise(3, "4", 0, 0, 0, 0, 0, -1));
+        circuitFour.add(new Exercise());
+
+        Circuit circuitFive = new Circuit();
+        circuitFive.setOpenStatus(true);
+        circuitFive.setName("Circuit Five");
+        circuitFive.add(new Exercise(0, "1", 0, 0, 0, 0, 0, -1));
+        circuitFive.add(new Exercise(1, "2", 0, 0, 0, 0, 0, -1));
+        circuitFive.add(new Exercise(2, "3", 0, 0, 0, 0, 0, -1));
+        circuitFive.add(new Exercise(3, "4", 0, 0, 0, 0, 0, -1));
+        circuitFive.add(new Exercise());
+
+        mWorkout.add(mFirstPlaceholderCircuit);
+        mWorkout.add(circuitOne);
+        mWorkout.add(circuitTwo);
+        mWorkout.add(circuitThree);
+        mWorkout.add(circuitFour);
+        mWorkout.add(circuitFive);
+        mWorkout.add(mLastPlaceholderCircuit);
+    }
+
+    //adds a new open circuitworkspaceListView
+    public void addCircuit(int circuitNumber){
+        Circuit c = new Circuit();
+        c.setName("Circuit " + circuitNumber);
+        c.add(new Exercise());
+        c.setOpenStatus(true);
+        mWorkout.add(circuitNumber, c);
+    }
+    //adds a closed circuit, e.g. a circuit with only one exercise
+    public void addClosedCircuit(Exercise e, int circuitNumber){
+        Circuit c = new Circuit();
+        c.setOpenStatus(false);
+        c.add(e);
+        mWorkout.add(circuitNumber, c);
+    }
+
+    public void placeClosedCircuitWithExercise(int circuitPosition, Exercise exercise){
+        Circuit c = new Circuit();
+        c.setOpenStatus(false);
+        c.add(exercise);
+        mWorkout.add(circuitPosition, c);
+    }
+        public void setToggledExerciseExplicit(Exercise e){
+        mToggledExercise = e;
+    }
+
+    public void clearToggledExercise(){ mToggledExercise = null;}
+
+    public boolean isAnExerciseToggled(){
+        if (mToggledExercise == null){
+            return false;
+        }
+        return true;
+    }
+
+    public Exercise getToggledExercise(){return mToggledExercise;}
+
+
+    public void addExerciseToOpenCircuit(Exercise e, int circuitNumber){
+
+        int circuitSize = mWorkout.get(circuitNumber).getSize();
+        //adds exercise to second to last position
+        mWorkout.get(circuitNumber).add(circuitSize - 1, e);
+        //mWorkout.get(circuitNumber).isNotLast();
+
+        if (mWorkout.get(circuitNumber).getName() == "Placeholder"){
+            mWorkout.get(circuitNumber).setName("Circuit " + circuitNumber);
+            Circuit c = new Circuit();
+            mWorkout.add(c);
+        }
+    }
+
+        public static Circuit getClosedCircuitWithExercise(Exercise exercise){
+        Circuit circuit = new Circuit();
+        circuit.setOpenStatus(false);
+        circuit.add(exercise);
+        circuit.setType(Circuit.CircuitType.DATA);
+        return circuit;
+    }
+        public void placeNewCircuit(int circuit) {
+        Circuit c = new Circuit();
+        c.setName("New Circuit");
+        c.add(new Exercise());
+        c.setOpenStatus(true);
+        mWorkout.add(circuit, c);
+    }
+ */

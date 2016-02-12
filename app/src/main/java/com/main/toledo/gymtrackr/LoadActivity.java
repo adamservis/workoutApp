@@ -1,18 +1,14 @@
 package com.main.toledo.gymtrackr;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,7 +18,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
-import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -32,14 +28,13 @@ import java.util.ArrayList;
  */
 public class LoadActivity extends ActionBarActivity {
     //fragments needed for the load activity
-    public String[] planArray; //stubs = {"CHEST", "BACK", "ARMS"};
-    static public ArrayList<String> planList;
-    LoadListFragment ListFragment;
+    //private String[] planArray; //stubs = {"CHEST", "BACK", "ARMS"};
+    private ArrayList<String> mPlanList;
     private int actionToPerform;
     //Program State Constants
     final int PLAN = 1, WORKOUT = 2, WORKOUT_FROM_PLAN_FLAG = 3, WORKOUT_WITH_PLAN = 4, LOAD_PLAN = 5;
     //Error constants
-    final int OTHER = 10, INVALID_NAME_VALUE = 11, TAKEN_NAME_VALUE = 12;
+    //final int OTHER = 10, INVALID_NAME_VALUE = 11, TAKEN_NAME_VALUE = 12;
     //
     int errorType;
     int slideVal;
@@ -48,10 +43,11 @@ public class LoadActivity extends ActionBarActivity {
     int SCREENHEIGHT;
     //this is the stub list
     //private static ArrayList<Plan> workoutPlans = new ArrayList<>();
-    //the adapter is responsible for populating the load list
-    public static LoadAdapter adapter;
+    //the mAdapter is responsible for populating the load list
+    private LoadAdapter mAdapter;
     private String newPlanName;
     private boolean mCopyFlag;
+    private WorkoutData mWorkoutData;
     //testvals
     String s;
 
@@ -67,25 +63,25 @@ public class LoadActivity extends ActionBarActivity {
         MAKE WORKOUTPLANS REFLECT OUR DB STUFF AND WE'RE GOOD
 
          */
-        //populates our display initially
-        //initiates filter
-        ListFragment = new LoadListFragment();
-
-        planList = new ArrayList<String>();
-        DatabaseWrapper db = new DatabaseWrapper();
-        planArray = db.loadPlanNames();
+        mWorkoutData = WorkoutData.get(this);
+        mPlanList = new ArrayList<String>();
         //convert array to list for dynamic stuffs
-        for (String s : planArray){
-            planList.add(s);
+        for (String s : mWorkoutData.pullPlanList()){
+            mPlanList.add(s);
         }
-        //creates a list adapter for our stub exercises
-        adapter = new LoadAdapter(this, 0, planList);
-
+        //creates a list mAdapter for our stub exercises
+        mAdapter = new LoadAdapter(this, 0, mPlanList);
+        /*
         FragmentTransaction transaction =
                 getSupportFragmentManager().beginTransaction();
 
         transaction.add(R.id.loadListContainer, ListFragment);
         transaction.commit();
+        */
+        ListView loadListView = (ListView) findViewById(R.id.loadListView);
+        loadListView.setAdapter(mAdapter);
+        loadListView.setDivider(null);
+        loadListView.setDividerHeight(0);
 
         WindowManager wm = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
@@ -108,7 +104,8 @@ public class LoadActivity extends ActionBarActivity {
         // Handle presses on the action bar items
         switch (item.getItemId()) {
             case R.id.action_add_plan:
-
+                showNameDialog();
+                /*
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("New Plan Options");
                 builder.setItems(new CharSequence[]
@@ -133,8 +130,8 @@ public class LoadActivity extends ActionBarActivity {
                             }
                         });
                 builder.create().show();
-
-                adapter.notifyDataSetChanged();
+                */
+                mAdapter.notifyDataSetChanged();
                 return true;
             case R.id.action_settings:
                 //openSettings();
@@ -144,14 +141,11 @@ public class LoadActivity extends ActionBarActivity {
         }
     }
 
-    public LoadAdapter getAdapter(){
-        return this.adapter;
+    public void setNewPlanName(String s){
+        newPlanName = s;
     }
 
-    public void setNewPlanName(String s){
-        newPlanName = s;};
-
-    public ArrayList<String> getPlanList(){return planList; }
+    public ArrayList<String> getPlanList(){return mPlanList; }
 
     public void setCopyFlag(boolean b){mCopyFlag = b;}
 
@@ -163,35 +157,21 @@ public class LoadActivity extends ActionBarActivity {
         p.setName(newPlanName);
         DatabaseWrapper db = new DatabaseWrapper();
         db.saveEntirePlan(p);
-        planList.clear();
+        mPlanList.clear();
         String[] planArray = db.loadPlanNames();
         //convert array to list for dynamic stuffs
         for (String s : planArray){
-            planList.add(s);
+            mPlanList.add(s);
         }
     }
+
     public void createNewPlan(){
-        //might be able to just create a new plan
-        //WorkoutData.get(this).clear();
 
-        //Make a blank plan.
-        Plan p = new Plan();
-        p.setName(newPlanName);
-
-        //Log.d("4/17", ""+e.getName() + " Size: + " + exercises.length);
-
-        DatabaseWrapper db = new DatabaseWrapper();
-
-        Circuit_temp[] circuits = new Circuit_temp[0];
-        p.setCircuits(circuits);
-        db.saveEntirePlan(p);
-
-
-        planList.clear();
-        String[] planArray = db.loadPlanNames();
+        WorkoutData.get(this).createNewPlanWithName(newPlanName);
+        mPlanList.clear();
         //convert array to list for dynamic stuffs
-        for (String s : planArray){
-            planList.add(s);
+        for (String s : WorkoutData.get(this).pullPlanList()){
+            mPlanList.add(s);
         }
     }
 
@@ -242,7 +222,7 @@ public class LoadActivity extends ActionBarActivity {
 
             if ((convertView == null)) {
                 convertView = getLayoutInflater()
-                        .inflate(R.layout.l_frag_list_item, null);
+                        .inflate(R.layout.l_list_item, null);
             }
 
             final String planName = (String)getItem(position);
@@ -266,14 +246,11 @@ public class LoadActivity extends ActionBarActivity {
             delete.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
                     swipableLinearLayout.resetPosition();
                     mTextViewHandle = null;
-
                     DatabaseWrapper db = new DatabaseWrapper();
                     db.deletePlan(planName);
-                    planList.remove(planName);
-
+                    mPlanList.remove(planName);
                     notifyDataSetChanged();
                 }
             });
@@ -282,15 +259,8 @@ public class LoadActivity extends ActionBarActivity {
             edit.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    /*
+                    mWorkoutData.savePlan();
                     Intent i = new Intent(getContext(), WorkspaceActivity.class);
-                    i.putExtra("EXTRA_PLAN_NAME", newPlanName);
-                    i.putExtra("EXTRA_MODE", PLAN);
-                    startActivity(i);
-                    */
-                    Intent i = new Intent(getContext(), WorkspaceActivity.class);
-                    WorkoutData.get(getApplicationContext()).setWorkoutState(LOAD_PLAN);
-                    WorkoutData.get(getApplicationContext()).setWorkoutPlanName(planName);
                     startActivity(i);
                 }
             });
@@ -299,29 +269,12 @@ public class LoadActivity extends ActionBarActivity {
             workout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    /*
+                    mWorkoutData.loadPlan(planName);
                     Intent i = new Intent(getContext(), WorkspaceActivity.class);
-                    i.putExtra("EXTRA_PLAN_NAME", newPlanName);
-                    i.putExtra("EXTRA_MODE", WORKOUT_WITH_PLAN);
-                    //another flag used for ui stuff
-                    startActivity(i);
-                    */
-                    Intent i = new Intent(getContext(), WorkspaceActivity.class);
-                    WorkoutData.get(getApplicationContext()).setWorkoutState(WORKOUT_WITH_PLAN);
-                    WorkoutData.get(getApplicationContext()).setWorkoutPlanName(planName);
                     startActivity(i);
                 }
             });
-            /*
-            ImageButton duplicate = (ImageButton) convertView.findViewById(R.id.duplicateButton);
-            duplicate.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mCopyFlag = true;
-                    showNameDialog();
-                }
-            });
-            */
+
             return convertView;
         }
 

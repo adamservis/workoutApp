@@ -336,6 +336,7 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
                     break;
             }
             convertView.setTag(holder);
+            convertView.setLongClickable(true);
         } else {
             holder = (ChildViewHolder)convertView.getTag();
         }
@@ -486,7 +487,7 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
                         : R.drawable.ic_expand_arrow_50;
                 //todo Add code to hide footer view
                 holder.arrow.setImageResource(imageResourceId);
-                holder.dragHandle = (View) convertView.findViewById(R.id.drag_icon);
+                //holder.dragHandle = (View) convertView.findViewById(R.id.drag_icon);
                 if (isExpanded) {
                     holder.footerView.setVisibility(View.GONE);
                 }else {
@@ -630,6 +631,10 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
 
     public long addGroup(int groupPostion, Circuit circuit){
         mWorkout.add(groupPostion, circuit);
+        for(Exercise e : circuit.getExercises()){
+            mChildIdMap.put(e, AVAILABLE_STABLE_ID);
+            AVAILABLE_STABLE_ID++;
+        }
         mGroupIdMap.put(circuit, AVAILABLE_STABLE_ID);
         AVAILABLE_STABLE_ID++;
         return AVAILABLE_STABLE_ID - 1;
@@ -638,7 +643,7 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
 
     public void removeGroup(int groupPosition){
         mGroupIdMap.remove(
-            mWorkout.get(groupPosition)
+                mWorkout.get(groupPosition)
         );
         mWorkout.remove(groupPosition);
     }
@@ -663,8 +668,22 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
      *
      *
      */
+    //This has NOTHING to do with context menu selection
     @Override
     public boolean isChildSelectable(int groupPosition, int childPosition) {
+        /*
+        Log.d(logTag, "isChildSelectable()");
+        if(WorkoutData.get(mContext).isCircuitAtPositionPlaceholder(groupPosition))
+            return false;
+
+        if(mWorkout.get(groupPosition).getExercise(childPosition).getName().equals("test")) {
+            Log.d(logTag, "SHOULD RETURN FALSE");
+            return false;
+        }
+
+        if(!mWorkout.get(groupPosition).isOpen())
+            return false;
+        */
         return true;
     }
 
@@ -831,7 +850,7 @@ public class WorkspaceExpandableListAdapterMKIII extends BaseExpandableListAdapt
                 @Override
                 public boolean onLongClick(View view) {
                     mListener.OnDragHandleLongClickedListener(convertView, ExpandableListView.PACKED_POSITION_TYPE_CHILD);
-                    return false;
+                    return true;
                 }
             });
     }

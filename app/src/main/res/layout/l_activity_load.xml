@@ -7,11 +7,9 @@
     android:id="@+id/loadMainWindow"
     android:background="#1ca4fb">
 
-    <FrameLayout
-        android:id="@+id/loadListContainer"
-        android:layout_width="match_parent"
+    <ListView
+        android:id="@+id/loadListView"
         android:layout_height="wrap_content"
-        android:gravity="bottom"
-        />
+        android:layout_width="match_parent"/>
 
 </LinearLayout>

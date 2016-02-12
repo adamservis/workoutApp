@@ -28,6 +28,7 @@ public class SplashScreen extends Activity{
         } catch (IOException io) {
             throw new Error("Unable to create database");
         }
+
         new Handler().postDelayed(new Runnable() {
 
             /*
@@ -39,7 +40,7 @@ public class SplashScreen extends Activity{
             public void run() {
                 // This method will be executed once the timer is over
                 // Start your app main activity
-                Intent i = new Intent(SplashScreen.this, StartActivity.class);
+                Intent i = new Intent(SplashScreen.this, WorkspaceActivity.class);
                 startActivity(i);
 
                 // close this activity

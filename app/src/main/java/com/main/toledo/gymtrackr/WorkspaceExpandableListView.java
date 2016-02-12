@@ -24,6 +24,7 @@ import android.widget.AbsListView;
 import android.widget.ExpandableListView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by Adam on 2/22/2015.
@@ -111,17 +112,18 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
     private int CURRENT_GROUP = INVALID_POSITION;
     private boolean CURRENT_GROUP_IS_OPEN = false;
 
-    private boolean[] mExpansionMemory = null;
+    private HashMap<Circuit, Boolean> mExpansionMemory;
 
     private int DRAGGED_ITEM_TYPE;
-
+    private boolean HIDE_MOBILE_VIEW_FLAG = false;
     //TYPE
     private boolean mShouldRemoveObserver;
     private WorkspaceExpandableListAdapterMKIII mAdapter;
 
     //ITEM ADDITION VARS
     private boolean mAddingCircuitFlag = false;
-
+    private Circuit mCircuitToAdd = null;
+    //private boolean COPY_CIRCUIT_FLAG = false;
     private WorkspaceExpandableListAdapterMKIII.dragListener mListener = new WorkspaceExpandableListAdapterMKIII.dragListener(){
         @Override
         public void OnDragHandleLongClickedListener(final View selectView, int type){
@@ -157,8 +159,8 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
         mAdapter.setDragListener(mListener);
     }
 
-    public void beginItemAddition(int type, int listY, MotionEvent event, float uiDraggableHeight){
-        printWorkoutData();
+    public void beginItemAddition(int type, int listY, MotionEvent event, float uiDraggableHeight, Circuit copyCircuit, Exercise copyExercise){
+        //printWorkoutData();
         mActivePointerId = event.getPointerId(0);
         DRAGGED_ITEM_TYPE = type;
         mDownY = listY - (int)uiDraggableHeight;
@@ -180,25 +182,31 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
         CURRENT_GROUP = getPackedPositionGroup(getExpandableListPosition(position));
         CURRENT_CHILD = getPackedPositionChild(getExpandableListPosition(position));
         CURRENT_GROUP_IS_OPEN = Workout.get(CURRENT_GROUP).isOpen();
-        Log.d(logTag, "Last position on list is G: " + CURRENT_GROUP + " C: " + CURRENT_CHILD);
+        //Log.d(logTag, "Last position on list is G: " + CURRENT_GROUP + " C: " + CURRENT_CHILD);
         setOnScrollListener(null);  //disable scrolling for item placement
         if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
+            Exercise exerciseToAdd;
+            if(copyExercise == WorkspaceFragment.NO_EXERCISE_TO_COPY){
+                exerciseToAdd = WorkoutData.getGenericExercise();
+            } else {
+                exerciseToAdd = copyExercise;
+            }
             if (Workout.get(CURRENT_GROUP).isOpen() && CURRENT_CHILD != -1) {
                 //add item to open circuit
-                Log.d(logTag, "!!!!!!!!!!!!!!!!!!!!!!!!adding item to open circuit, current group " + CURRENT_GROUP + " current child " + CURRENT_CHILD);
-                mMobileItemId = mAdapter.addChild(CURRENT_GROUP, CURRENT_CHILD, WorkoutData.get(getContext()).getGenericExercise());
+                //Log.d(logTag, "!!!!!!!!!!!!!!!!!!!!!!!!adding item to open circuit, current group " + CURRENT_GROUP + " current child " + CURRENT_CHILD);
+                mMobileItemId = mAdapter.addChild(CURRENT_GROUP, CURRENT_CHILD, exerciseToAdd);
                 mAdapter.notifyDataSetChanged();
                 restoreListExpansion();
             } else {
                 //add item to closed circuit
                 //if(WorkoutData.get(mContext).isCircuitAtPositionPlaceholder(CURRENT_GROUP))
-                mAdapter.addGroup(CURRENT_GROUP, WorkoutData.get(getContext()).getClosedCircuit());
-                mMobileItemId = mAdapter.addChild(CURRENT_GROUP, 0, WorkoutData.get(getContext()).getGenericExercise());
+                mAdapter.addGroup(CURRENT_GROUP, WorkoutData.getClosedCircuit());
+                mMobileItemId = mAdapter.addChild(CURRENT_GROUP, 0, exerciseToAdd);
                 CURRENT_CHILD = 0;
                 CURRENT_GROUP_IS_OPEN = false;
                 mAdapter.notifyDataSetChanged();
-                Log.d(logTag, "!!!!!!!!!!!!!!!!!!!!!!!!adding item to closed circuit, id = " + mMobileItemId + " current group: " + CURRENT_GROUP);
-                printWorkoutData();
+                //Log.d(logTag, "!!!!!!!!!!!!!!!!!!!!!!!!adding item to closed circuit, id = " + mMobileItemId + " current group: " + CURRENT_GROUP);
+                //printWorkoutData();
                 restoreListExpansion();
             }
             /*
@@ -224,14 +232,20 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
                 }
             });
             getNeighborPositions();
-            printTargetLocations();
+            //printTargetLocations();
             updateNeighborIDsForCurrentPosition();
-            printTargetIds();
+            //printTargetIds();
             mTotalOffset = 0;
 
 
         } else if(type == ExpandableListView.PACKED_POSITION_TYPE_GROUP){
 
+            if(copyCircuit == WorkspaceFragment.NO_CIRCUIT_TO_COPY){
+                mCircuitToAdd = WorkoutData.getNewOpenCircuitWithName("AddedCircuit");
+            } else {
+                mCircuitToAdd = copyCircuit;
+                //COPY_CIRCUIT_FLAG = true;
+            }
             ABOVE_VALID_GROUP = CURRENT_GROUP;
             mTotalOffset = 0;
             if(WorkoutData.get(mContext).isCircuitAtPositionPlaceholder(ABOVE_VALID_GROUP)){
@@ -250,7 +264,7 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
 
             mAddingCircuitFlag = true;
 
-            Log.d(logTag, "In group addition code.  above group = " + ABOVE_VALID_GROUP + "above id" + mAboveItemId);
+            //Log.d(logTag, "In group addition code.  above group = " + ABOVE_VALID_GROUP + "above id" + mAboveItemId);
 
             //Log.d(logTag, "Above position is placeholder: " + WorkoutData.get(mContext).isCircuitAtPositionPlaceholder(ABOVE_VALID_GROUP));
 
@@ -298,11 +312,28 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
             }
         }
     }
+    public void printListViewData(){
+        //todo
+        int first = getFirstVisiblePosition();
+        int last = getLastVisiblePosition();
+        Log.d(logTag, "Visible views:");
+        for(int pos = first; pos<=last; pos++){
+            long explstpos = getExpandableListPosition(pos);
+            long id;
+            if(getPackedPositionType(explstpos) == PACKED_POSITION_TYPE_CHILD){
+                id = mAdapter.getChildId(getPackedPositionGroup(explstpos), getPackedPositionChild(explstpos));
+            } else {
+                id = mAdapter.getGroupId(getPackedPositionGroup(explstpos));
+            }
+            Log.d(logTag, "Group: " + getPackedPositionGroup(explstpos) + " Child: " + getPackedPositionChild(explstpos) + " View ID: " + id);
+        }
+    }
+
     public void finishItemAddition(){
         post(new Runnable() {
             @Override
             public void run() {
-                Log.d(logTag, "finishItemAddtion()");
+                //Log.d(logTag, "finishItemAddtion()");
                 mDragInProgress = false;
                 mDragMode = false;
                 mActivePointerId = INVALID_POINTER_ID;
@@ -314,13 +345,32 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
                 }
                 setOnScrollListener(mScrollListener);
                 invalidate();
-                Log.d(logTag, "Final item addition");
-                printWorkoutData();
+                //Log.d(logTag, "Final item addition");
+                //printWorkoutData();
             }
         });
     }
+    private void saveGroupExpansionState(){
+        //Log.d(logTag, "saveGroupExpansionState()");
+        mExpansionMemory = new HashMap<>();
+        for(Circuit c : Workout){
+            //Log.d(logTag, "Expanded: " + c.isExpanded());
+            mExpansionMemory.put(c, c.isExpanded());
+        }
+    }
+
+    private void collapseAllGroups(){
+        int numCircuits = Workout.size();
+        for(int i = 0; i<numCircuits; i++){
+            Circuit circuit = Workout.get(i);
+            boolean expanded = isGroupExpanded(i);
+            if (circuit.isOpen() && expanded) collapseGroup(i);
+        }
+    }
 
     private void dragSetup(final View selectView, int type){
+
+        //Log.d(logTag, "dragSetup()");
         long expLstPos = getExpandableListPosition(getPositionForView(selectView));
         CURRENT_GROUP = getPackedPositionGroup(expLstPos);
         CURRENT_CHILD = getPackedPositionChild(expLstPos);
@@ -335,8 +385,7 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
             mMobileItemId = adapter.getChildId(CURRENT_GROUP, CURRENT_CHILD);
             startDrag(selectView);
         } else if(type == PACKED_POSITION_TYPE_GROUP){
-            int numCircuits = Workout.size();
-            mExpansionMemory = new boolean[numCircuits];
+
             mMobileItemId = adapter.getGroupId(CURRENT_GROUP);
             //Log.d(logTag, "CURRENT GROUP = " + CURRENT_GROUP);
 
@@ -346,36 +395,45 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
 
             //collapse all open groups, save old expanded state to mExpansionMemory for
             //later restoration
-            for(int i = 0; i<numCircuits; i++) {
-                Circuit circuit = Workout.get(i);
-                boolean expanded = isGroupExpanded(i);
-                mExpansionMemory[i] = expanded;
-                if (circuit.isOpen() && expanded) collapseGroup(i);
+            saveGroupExpansionState();
+            /*
+             * DIRTY HACK USED TO FIX A RACE CONDITION ENCOUNTERED WHEN WORKSPACE CONTAINS A SMALL NUMBER
+             * OF COLLAPSED GROUPS.  WHEN WORKOUTDATA IS COMPRISED ONLY OF 2-3 CIRCUITS THAT ARE COLLAPSED
+             * PLUS THE TWO PLACEHOLDER CIRCUITS, START DRAG WOULD BE CALLED BEFORE UI ALTERATION IS COMPLETE
+             * RESULTING IN UNPREDICTABLE DRAG BEHAVIOR.
+             */
+            for(int i = 0; i<Workout.size(); i++){
+                expandGroup(i);
             }
+            collapseAllGroups();
 
+            adapter.toggleListPadding(true);
             //restore list position
             final WorkspaceExpandableListView listView = this;
             final ViewTreeObserver observer = getViewTreeObserver();
+            mShouldRemoveObserver = false;
 
             observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
                 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
                 public boolean onPreDraw() {
+
                     //Log.d(logTag, "on predraw fired");
 
                     if (!mShouldRemoveObserver) {
                         //setSelectionFromTop(CURRENT_GROUP, top);
                         //Log.d(logTag, "first pass");
-                        adapter.toggleListPadding(true);
+                        setSelectionFromTop(getFlatListPosition(getPackedPositionForGroup(CURRENT_GROUP)), top);
                         mShouldRemoveObserver = true;
+                        //printListViewData();
                         //invalidate();
-                        adapter.notifyDataSetChanged();
+                        //adapter.notifyDataSetChanged();
                         return false;
                     }
+                    //Log.d(logTag, "second pass");
 
-                    setSelectionFromTop(getFlatListPosition(getPackedPositionForGroup(CURRENT_GROUP)), top);
                     //Log.d(logTag, "Setting selection for group drag: " + (getFlatListPosition(getPackedPositionForGroup(CURRENT_GROUP)) + getFirstVisiblePosition()));
 
-                    observer.removeOnPreDrawListener(this);
+
                     mShouldRemoveObserver = false;
 
                     //int newTop = getViewForID(mMobileItemId).getTop();
@@ -391,23 +449,35 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
                     mShouldRemoveObserver = false;
                     }
                     */
-
+                    /*
                     post(new Runnable() {
                         @Override
                         public void run() {
-                            listView.startDrag(getViewForID(mMobileItemId));
+
                         }
                     });
+                    */
+
+                    //printListViewData();
+                    observer.removeOnPreDrawListener(this);
+                    listView.startDrag(getViewForID(mMobileItemId));
 
                     return true;
+
                 }
             });
         }
     }
 
+    public boolean isDragInProgress(){
+        return mDragMode;
+    }
     private void startDrag(View selectedView){
-        //Log.d(logTag, "Starting Drag");
+        Log.d(logTag, "startDrag");
+        //printListViewData();
+        //Log.d(logTag, "mobileid + " + mMobileItemId);
         mDragMode = true;
+        //Log.d(logTag, "mDragMode is now true: " + mDragMode);
         mTotalOffset = 0;
 
         mHoverCell = getAndAddHoverView(selectedView);
@@ -415,22 +485,21 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
         selectedView.setVisibility(INVISIBLE);
         getNeighborPositions();
         updateNeighborIDsForCurrentPosition();
-        printTargetIds();
+        //printTargetIds();
         //Log.d(logTag, "Above item Id" + mAboveItemId);
         mDragInProgress = true;
     }
 
 
-    //todo we are here
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-
+        //Log.d(logTag, "!!!!!!!!!!!!!!!!!mDragMode: " + mDragMode);
         if (mDragMode) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_MOVE: //mose if moved
-
+                    //Log.d(logTag, "*********Move");
                     if (mActivePointerId == INVALID_POINTER_ID) {
-                        Log.d(logTag, "INVALID POINTER ID");
+                        //Log.d(logTag, "INVALID POINTER ID");
                         break;
                     }
 
@@ -458,9 +527,11 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
                     }
                     break;
                 case MotionEvent.ACTION_CANCEL:
+                    //Log.d(logTag, "*********Action_cancel");
                     touchEventsCancelled();
                     break;
                 case MotionEvent.ACTION_UP: //mouse button is released
+                    //Log.d(logTag, "*********Action_up");
                     touchEventsEnded();
                     break;
                 case MotionEvent.ACTION_POINTER_UP:
@@ -468,6 +539,7 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
                  * the movement of the hover cell has ended, then the dragging event
                  * ends and the hover cell is animated to its corresponding position
                  * in the listview. */
+                    //Log.d(logTag, "*********Action_pointer_up");
                     pointerIndex = (event.getAction() & MotionEvent.ACTION_POINTER_INDEX_MASK) >>
                             MotionEvent.ACTION_POINTER_INDEX_SHIFT;
                     final int pointerId = event.getPointerId(pointerIndex);
@@ -497,8 +569,11 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
     }
 
     private void addCircuit(){
-        mMobileItemId = mAdapter.addGroup(ABOVE_VALID_GROUP, WorkoutData.getNewOpenCircuitWithName("AddedCircuit"));
-        mAdapter.addChild(ABOVE_VALID_GROUP, 0 , new Exercise());
+        //printListViewData();
+        mMobileItemId = mAdapter.addGroup(ABOVE_VALID_GROUP, mCircuitToAdd);
+        mCircuitToAdd = null;
+        //if(!COPY_CIRCUIT_FLAG) mAdapter.addChild(ABOVE_VALID_GROUP, 0 , new Exercise());
+        //COPY_CIRCUIT_FLAG = false;
         Log.d(logTag, "Added circuits id: " + mMobileItemId);
         mAdapter.notifyDataSetChanged();
         mAddingCircuitFlag = false;
@@ -513,7 +588,7 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
             public boolean onPreDraw() {
 
                 observer.removeOnPreDrawListener(this);
-
+                //printListViewData();
                 View v = getViewForID(mMobileItemId);
 
                 if (v != null)
@@ -523,16 +598,16 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
             }
         });
 
-        Log.d(logTag, "Workout contents post circuit add: ");
-        printWorkoutData();
+        //Log.d(logTag, "Workout contents post circuit add: ");
+        //printWorkoutData();
     }
+
     private void printTargetLocations(){
         Log.d(logTag, "above group/position/open: " + ABOVE_VALID_GROUP + "/" + ABOVE_VALID_POSITION + "/" + ABOVE_GROUP_IS_OPEN);
         Log.d(logTag, "current group/position/open: " + CURRENT_GROUP + "/" + CURRENT_CHILD + "/" + CURRENT_GROUP_IS_OPEN);
         Log.d(logTag, "below group/position/open: " + BELOW_VALID_GROUP + "/" + BELOW_VALID_POSITION + "/" + BELOW_GROUP_IS_OPEN);
     }
 
-    //TODO fix this
     private void handleAdditionCellSwitch(){
 
         //Log.d(logTag, "handleAdditionCellSwitch()");
@@ -552,13 +627,13 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
         if (isBelow || isAbove) {
 
             if(mAddingCircuitFlag){
-                Log.d(logTag, "Adding circuit...");
+                //Log.d(logTag, "Adding circuit...");
                 addCircuit();
                 //Now we transition between adding and dragging...
                 return;
             }
-
-            Log.d(logTag, "Handleadditioncellswitch: is below: " + isBelow + "; is above: " + isAbove);
+            //Log.d(logTag, "Done adding circuit...");
+            //Log.d(logTag, "Handleadditioncellswitch: is below: " + isBelow + "; is above: " + isAbove);
             //Log.d(logTag, "moving from circuit-group: " + CURRENT_GROUP + "-" + CURRENT_CHILD);
             final long switchItemID = isBelow ? mBelowItemId : mAboveItemId;
             final long currentId = mMobileItemId;
@@ -632,13 +707,14 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
 
                         //testflag = true;
 
-
+                        printListViewData();
+                        Log.d(logTag, "current id: " + currentId);
                         View v = getViewForID(currentId);
 
                         if (v != null)
                             v.setVisibility(View.INVISIBLE);
                         else
-                            Log.d(logTag, "VIEW IS NULL, TERRIBLE THINGS, LINE 414 WELV");
+                            Log.d(logTag, "VIEW IS NULL, TERRIBLE THINGS, LINE 1 WELV");
 
                         View switchView = getViewForID(switchItemID);
                         if (switchView != null) {
@@ -668,7 +744,7 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
                         if (v != null)
                             v.setVisibility(View.INVISIBLE);
                         else
-                            Log.d(logTag, "VIEW IS NULL, TERRIBLE THINGS, LINE 414 WELV");
+                            Log.d(logTag, "VIEW IS NULL, TERRIBLE THINGS, LINE 2 WELV");
 
                         return true;
                     }
@@ -683,9 +759,10 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
         final int deltaY = mLastEventY - mDownY;
         //Log.d(logTag, "deltaY = " + mLastEventY + " - " + mDownY + " = " + deltaY);
         int deltaYTotal = mHoverCellOriginalBounds.top + mTotalOffset + deltaY;
-
+        //printWorkoutData();
+        //printListViewData();
         View belowView = getViewForID(mBelowItemId);
-        final View mobileView = getViewForID(mMobileItemId);
+        final View mobileView = getViewForID(mMobileItemId);//, true);
         View aboveView = getViewForID(mAboveItemId);
 
         //if(mobileView == null) Log.d(logTag, "mobile view is null.. mobile id = " + mMobileItemId);
@@ -697,13 +774,16 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
             Log.d(logTag, "above top = " + aboveView.getTop());
         */
         //if(belowView == null)Log.d(logTag, "below null + below id: " + mBelowItemId);
-
+        if (mobileView == null){
+            HIDE_MOBILE_VIEW_FLAG = true;
+            return;
+        }
         boolean isBelow = (belowView != null) && (deltaYTotal > belowView.getTop()) && !WorkoutData.get(mContext).isCircuitAtPositionPlaceholder(BELOW_VALID_GROUP);
         boolean isAbove = (aboveView != null) && (deltaYTotal < aboveView.getTop()) && !WorkoutData.get(mContext).isCircuitAtPositionPlaceholder(ABOVE_VALID_GROUP);
         //i like the use above and below thing
         if (isBelow || isAbove) {
 
-            Log.d(logTag, "is below: " + isBelow + "; is above: " + isAbove);
+            //Log.d(logTag, "is below: " + isBelow + "; is above: " + isAbove);
             //Log.d(logTag, "moving from circuit-group: " + CURRENT_GROUP + "-" + CURRENT_CHILD);
             final long switchItemID = isBelow ? mBelowItemId : mAboveItemId;
             final long currentId = mMobileItemId;
@@ -726,7 +806,7 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
             //final View lastView = getChildAt(getChildCount() -1); //Used for special case animations
             //final View secondToLastView = getChildAt(getChildCount() - 2); //Used for special case animations
             //lastView.setHasTransientState(true);
-            printTargetLocations();
+            //printTargetLocations();
             if(isBelow) moveElement(BELOW);
 
             if(isAbove) moveElement(ABOVE);
@@ -756,7 +836,7 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
             //Alteration 6/5
             //mobileView.setVisibility(View.VISIBLE);
             //switchView.setVisibility(View.INVISIBLE);
-            Log.d(logTag, "getNeightborPositions() called in handleCellSwitch()");
+            //Log.d(logTag, "getNeightborPositions() called in handleCellSwitch()");
             getNeighborPositions();
             updateNeighborIDsForCurrentPosition();
 
@@ -782,7 +862,7 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
                     if (v != null)
                         v.setVisibility(View.INVISIBLE);
                     else
-                        Log.d(logTag, "VIEW IS NULL, TERRIBLE THINGS, LINE 414 WELV");
+                        Log.d(logTag, "VIEW IS NULL, TERRIBLE THINGS, LINE 3 WELV");
 
                     View switchView = getViewForID(switchItemID);
 
@@ -835,7 +915,7 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
     }
 
     private void moveElement(int direction) {
-        Log.d(logTag, "MOVE CALLED.");
+        //Log.d(logTag, "MOVE CALLED.");
         int TARGET_GROUP;
         int TARGET_POSITION;
         boolean TARGET_GROUP_IS_OPEN;
@@ -869,8 +949,10 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
                     } else {
                         //MOVING TO NEW CLOSED GROUP
                         //\\\WorkoutData.get(mContext).placeClosedCircuitWithExercise(TARGET_GROUP, temp);
-                        Log.d(logTag, "TG: " + TARGET_GROUP);
-                        mAdapter.addGroup(TARGET_GROUP, WorkoutData.getClosedCircuitWithExercise(temp));
+                        //Log.d(logTag, "TG: " + TARGET_GROUP);
+                        Circuit c = WorkoutData.getClosedCircuit();
+                        mAdapter.addGroup(TARGET_GROUP, c);
+                        c.add(temp);
 
                         if (CURRENT_GROUP_IS_OPEN) {
                             //target closed, current open
@@ -920,7 +1002,10 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
                             } else {
                                 //open target group is collapsed
                                 //\\\WorkoutData.get(mContext).placeClosedCircuitWithExercise(TARGET_GROUP + 1, temp);
-                                mAdapter.addGroup(TARGET_GROUP + 1, WorkoutData.getClosedCircuitWithExercise(temp));
+                                Circuit c = WorkoutData.getClosedCircuit();
+                                mAdapter.addGroup(TARGET_GROUP + 1, c);
+                                c.add(temp);
+
                                 Workout.get(CURRENT_GROUP).removeExercise(CURRENT_CHILD);
                                 //\\\Workout.remove(CURRENT_GROUP);
                                 mAdapter.removeGroup(CURRENT_GROUP);
@@ -947,16 +1032,21 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
                         //Log.d(logTag, "moveElement() - moving to group: " + TARGET_GROUP + " - child:" + TARGET_POSITION);
                         if (CURRENT_GROUP_IS_OPEN) {
                             //\\\WorkoutData.get(mContext).placeClosedCircuitWithExercise(TARGET_GROUP, temp);
-                            mAdapter.addGroup(TARGET_GROUP, WorkoutData.getClosedCircuitWithExercise(temp));
+                            Circuit c = WorkoutData.getClosedCircuit();
+                            mAdapter.addGroup(TARGET_GROUP, c);
+                            c.add(temp);
+
                             Workout.get(CURRENT_GROUP).removeExercise(CURRENT_CHILD);
                             //open to closed
                             //ANIMATION_FLAG = FROM_OPEN_DOWN_TO_CLOSED;
                         } else {
                             //\\\WorkoutData.get(mContext).placeClosedCircuitWithExercise(TARGET_GROUP + 1, temp);
-                            mAdapter.addGroup(TARGET_GROUP + 1, WorkoutData.getClosedCircuitWithExercise(temp));
+                            Circuit c = WorkoutData.getClosedCircuit();
+                            mAdapter.addGroup(TARGET_GROUP + 1, c);
+                            c.add(temp);
 
                             if(!WorkoutData.get(mContext).isCircuitAtPositionPlaceholder(CURRENT_GROUP)) {
-                                Log.d(logTag, "CG = " + CURRENT_GROUP + " CC = " + CURRENT_CHILD);
+                                //Log.d(logTag, "CG = " + CURRENT_GROUP + " CC = " + CURRENT_CHILD);
                                 Workout.get(CURRENT_GROUP).removeExercise(CURRENT_CHILD);
                                 mAdapter.removeGroup(CURRENT_GROUP);
                             }
@@ -1004,7 +1094,7 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
         int h = v.getHeight();
         int top = v.getTop();
         int left = v.getLeft();
-        Log.d(logTag, "getandaddhoverview - w: " + w + "; h: " + h + "; top: " + top + "; left: " + left);
+        //Log.d(logTag, "getandaddhoverview - w: " + w + "; h: " + h + "; top: " + top + "; left: " + left);
         Bitmap b = getBitmapWithBorder(v);
 
         BitmapDrawable drawable = new BitmapDrawable(getResources(), b);
@@ -1340,7 +1430,7 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
                 Log.d(logTag, e.getName());
         }
         */
-        //Log.d(logTag, "touchEventsEnded()");
+        Log.d(logTag, "touchEventsEnded()");
         final View mobileView = getViewForID(mMobileItemId);
         if (mDragInProgress|| mIsWaitingForScrollFinish) {
             mDragInProgress = false;
@@ -1359,7 +1449,14 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
 
             if(mHoverCellCurrentBounds!=null) {
 
-                mHoverCellCurrentBounds.offsetTo(mHoverCellOriginalBounds.left, mobileView.getTop());
+                int top;
+                if(mobileView == null){
+                    top = mHoverCellCurrentBounds.top;
+                } else {
+                    top = mobileView.getTop();
+                }
+
+                mHoverCellCurrentBounds.offsetTo(mHoverCellOriginalBounds.left, top);
 
                 ObjectAnimator hoverViewAnimator = ObjectAnimator.ofObject(mHoverCell, "bounds",
                         sBoundEvaluator, mHoverCellCurrentBounds);
@@ -1378,27 +1475,42 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
                     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
                     @Override
                     public void onAnimationEnd(Animator animation) {
-                        Log.d(logTag, "###################################DRAGGED ITEM MADE VISIBLE############################");
+                        //Log.d(logTag, "###################################DRAGGED ITEM MADE VISIBLE############################");
                         //TEST CODE
 
                         View view = getViewForID(mMobileItemId);
-                        view.setVisibility(VISIBLE);
+                        if (view!=null) view.setVisibility(VISIBLE);
 
                         //END TEST CODE
                         //mobileView.setVisibility(VISIBLE);
                         mDragMode = false;
                         mHoverCell = null;
                         mHoverCellCurrentBounds = null;
-                        final int top = mobileView.getTop();
                         setEnabled(true);
 
                         if (mExpansionMemory != null) {
+                            /*
                             for (int i = 0; i < mExpansionMemory.length; i++) {
                                 if (mExpansionMemory[i]) expandGroup(i);
                             }
                             mExpansionMemory = null;
                             mAdapter.toggleListPadding(false);
                             setSelectionFromTop(getFlatListPosition(getPackedPositionForGroup(CURRENT_GROUP)), top);
+                            */
+                            //todo
+                            for (int i = 0; i < Workout.size(); i++){
+                                if(mExpansionMemory.get(Workout.get(i))){
+                                    expandGroup(i);
+                                } else {
+                                    collapseGroup(i);
+                                }
+                            }
+                            mExpansionMemory = null;
+                            mAdapter.toggleListPadding(false);
+                            if(mobileView != null)
+                                setSelectionFromTop(getFlatListPosition(getPackedPositionForGroup(CURRENT_GROUP)), mobileView.getTop());
+                            else
+                                setSelection(getFlatListPosition(getPackedPositionForGroup(CURRENT_GROUP)));
                         }
 
                         mAboveItemId = INVALID_ID;
@@ -1408,7 +1520,6 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
                     }
                 });
                 hoverViewAnimator.start();
-
             }
         } else {
             touchEventsCancelled();
@@ -1461,6 +1572,17 @@ public class WorkspaceExpandableListView extends animatedExpandableListView {
         int hoverHeight = r.height();
 
         if (hoverViewTop <= 0 && offset > 0) {
+            /*
+             *  If HIDE_MOBILE_VIEW_FLAG is true, we need to set the mobile view to invisible at the
+             *  earliest possible opportunity.
+             */
+            if(HIDE_MOBILE_VIEW_FLAG){
+                View mobileView = getViewForID(mMobileItemId);
+                if(mobileView != null){
+                    mobileView.setVisibility(View.INVISIBLE);
+                    HIDE_MOBILE_VIEW_FLAG = false;
+                }
+            }
             smoothScrollBy(-mSmoothScrollAmountAtEdge, 0);
             return true;
         }

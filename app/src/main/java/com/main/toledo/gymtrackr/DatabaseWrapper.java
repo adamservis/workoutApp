@@ -175,7 +175,8 @@ public class DatabaseWrapper {
         Plan plan = null;
         Cursor c = myDatabase.rawQuery(rawquery, null);
         int count = c.getCount();
-        Circuit_temp[] circuits = new Circuit_temp[count];
+        //Circuit_temp[] circuits = new Circuit_temp[count];
+        ArrayList<Circuit> circuits = new ArrayList<>();
         int i = 0;
         int planId = -1;
         if(count >= 1) {
@@ -213,7 +214,7 @@ public class DatabaseWrapper {
                                 }
                                 exercises = getExercisesFromCircuitTable(workoutId);
 
-                                circuits[i] = new Circuit_temp(name, exercises, workoutId, open, sequence);
+                                circuits.add(new Circuit_temp(name, exercises, workoutId, open, sequence));
                                 i++;
                             }
                         }

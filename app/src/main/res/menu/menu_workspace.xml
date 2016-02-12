@@ -6,13 +6,23 @@
         android:title="Toggle Edit Mode"
         android:icon="@drawable/locked"
         app:showAsAction="ifRoom" />-->
-
+    <!--
     <item android:id="@+id/save_changes"
         android:title="Save changes"
         android:icon="@drawable/save"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom" />-->
 
-    <item android:id="@+id/action_settings" android:title="@string/action_settings"
-        android:orderInCategory="100" app:showAsAction="never" />
+    <!--<item android:id="@+id/action_settings" android:title="@string/action_settings"
+        app:showAsAction="never" />-->
+    <item android:id="@+id/plan_menu" android:title="Plan Menu"
+        app:showAsAction="never" />
 
+    <item android:id="@+id/action_save_to_history" android:title="Save to History"
+        app:showAsAction="never" />
+
+    <item android:id="@+id/action_view_history" android:title="View History"
+        app:showAsAction="never" />
+
+    <item android:id="@+id/action_clear" android:title="Clear"
+        app:showAsAction="never" />
 </menu>

@@ -8,7 +8,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -17,9 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -33,9 +30,9 @@ public class BrowseActivity extends ActionBarActivity {
     BrowseListFragment ListFragment;
 
     //this is the stub list
-    private static ArrayList<Exercise> mBrowseExerciseList = new ArrayList<Exercise>();
+    private ArrayList<Exercise> mBrowseExerciseList = new ArrayList<Exercise>();
     //the adapter is responsible for populating the browse list
-    public static BrowseAdapter adapter;
+    public BrowseAdapter adapter;
 
 
     //needed for add exercise functionality
@@ -213,9 +210,11 @@ public class BrowseActivity extends ActionBarActivity {
                 mTextViewHandle = null;
             }
             swipableLinearLayout.refreshIcon();
+
             swipableLinearLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    /*
                     Exercise exercise = new Exercise();
                     exercise.setName(e.getName());
                     exercise.setId(e.getId());
@@ -227,6 +226,7 @@ public class BrowseActivity extends ActionBarActivity {
                         nm.setMetricIntValue(m.getMetricIntValue());
                         exercise.addMetrics(nm);
                     }
+
                     WorkoutData.get(mContext).setToggledExerciseExplicit(e);//Sets this as the 'last' item added
 
                     int circuitValue = WorkoutData.get(mContext).getStateCircuit();
@@ -243,6 +243,8 @@ public class BrowseActivity extends ActionBarActivity {
                                 circuitValue);
                     }
                     //return to workspace
+                    */
+                    WorkoutData.get(mContext).swap(e);
                     WorkoutData.get(mContext).setBrowseState(BROWSE_WORKOUT);
                     Intent i = new Intent(mContext, WorkspaceActivity.class);
                     startActivity(i);
@@ -259,17 +261,18 @@ public class BrowseActivity extends ActionBarActivity {
                     db.deleteExerciseInExerciseTable(e.getId());
                     mExercises.remove(e);
                     notifyDataSetChanged();
+                    /*
                     if(WorkoutData.get(mContext).isAnExerciseToggled()){
                         if (WorkoutData.get(mContext).getToggledExercise() == e){
                             WorkoutData.get(mContext).clearToggledExercise();
                         }
                     }
+                    */
                 }
             });
 
             return convertView;
         }
     }
-
     }
 

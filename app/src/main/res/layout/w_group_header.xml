@@ -38,7 +38,7 @@
 
         <View
             android:layout_width="0dp"
-            android:layout_height="30dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:id="@+id/drag_icon"
             android:background="@drawable/drag"/>

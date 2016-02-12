@@ -18,12 +18,12 @@ public class Exercise {
     private int m_sequence;
     private int m_other = -1;
     private int m_time = -1;
-    private int m_oneRepMax;
+    //private int m_oneRepMax;
     private int m_oneRepMaxPercent;
     private boolean m_bWeight;
     private boolean m_bReps;
     private boolean m_bTime;
-    private boolean m_bOther;
+    //private boolean m_bOther;
     private String m_sOther;
     //private int m_exercise_id;
 
@@ -120,11 +120,11 @@ public class Exercise {
         this.m_muscleGroup = muscleGroup;
         this.m_equipmentType = equipmentType;
         this.m_targetMuscle = targetMuscle;
-        this.m_oneRepMax = oneRepMax;
+        //this.m_oneRepMax = oneRepMax;
         this.m_bWeight = weight;
         this.m_bReps = reps;
         this.m_bTime = time;
-        this.m_bOther = other;
+        //this.m_bOther = other;
         this.m_sOther = s_other;
         //if(m_name.equals("1"))// || m_name.equals("2") || m_name.equals("3"))
         //Log.d("4/9", "PULL FROM DB - BROWSE CONSTRUCTOR CALLED NAME: " + m_name + " -- WEIGHT: " + m_bWeight + " -- TIME: " + m_bTime + " -- REPS: " + m_bReps);
@@ -204,10 +204,13 @@ public class Exercise {
         m_metrics.add(repMetric);
     }
     */
+    public void clearMetrics(){
+        m_metrics.clear();
+    }
     //public void setStableExerciseId(int id){m_exercise_id = id;}
-    public void setOneRepMax(int oneRepMax) { this.m_oneRepMax = oneRepMax; }
+    //public void setOneRepMax(int oneRepMax) { this.m_oneRepMax = oneRepMax; }
 
-    public int getOneRepMax() { return this.m_oneRepMax; }
+   // public int getOneRepMax() { return this.m_oneRepMax; }
 
     public void setTime(int time) { this.m_time = time; }
 
@@ -217,7 +220,7 @@ public class Exercise {
 
     public int getOther() { return this.m_other; }
 
-    public void setOneRepMaxPercent(int oneRepMaxPercent) { this.m_oneRepMaxPercent = oneRepMaxPercent; }
+   // public void setOneRepMaxPercent(int oneRepMaxPercent) { this.m_oneRepMaxPercent = oneRepMaxPercent; }
 
     public int getOneRepMaxPercent() { return this.m_oneRepMaxPercent; }
 
@@ -229,7 +232,7 @@ public class Exercise {
 
     public int getRepetitions() { return this.m_repetitions; }
 
-    public void setSequence(int sequence) { this.m_sequence = sequence; }
+    //public void setSequence(int sequence) { this.m_sequence = sequence; }
 
     public int getSequence() { return this.m_sequence; }
 
@@ -262,11 +265,11 @@ public class Exercise {
     }
 
     public String getEquipment(){ return m_equipmentType; }
-
+    /*
     public void setLastPerformed(int lastPerformed) {
         this.m_lastPerformed = lastPerformed;
     }
-
+    */
     public int getLastPerformed() {
         return m_lastPerformed;
     }
@@ -284,7 +287,7 @@ public class Exercise {
     public boolean isToggled(){return mToggled;}
 
    //public int getStableID(){return m_exercise_id;}
-
+    /*
     public int getMetricValueByType(metricType metricType){
         int i = 0;
         for(Metric m : m_metrics){
@@ -294,12 +297,16 @@ public class Exercise {
         }
         return i;
     }
-
+    */
     public boolean isSaveToHistorySet(){return mSaveToHistory;}
     @Override
     public String toString() { return m_name; }
 
     public boolean hasPlanMetrics(){return hasPlanMetrics;}
+
+    public void addMetrics(ArrayList<Metric> metrics){
+        this.m_metrics = metrics;
+    }
     /*
     private boolean m_bWeight;
     private boolean m_bReps;
@@ -307,17 +314,17 @@ public class Exercise {
     private boolean m_bOther;
     private String m_sOther;
      */
-    public boolean usesWeight(){return m_bWeight;}
-    public boolean usesTime(){return m_bTime;}
-    public boolean usesReps(){return m_bReps;}
-    public boolean usesOther(){return m_bOther;}
+    //public boolean usesWeight(){return m_bWeight;}
+    //public boolean usesTime(){return m_bTime;}
+    //public boolean usesReps(){return m_bReps;}
+    //public boolean usesOther(){return m_bOther;}
     public String getOtherName(){return m_sOther;}
 
-    public void setUsesWeight(boolean b){m_bWeight = b;}
-    public void setUsesTime(boolean b){m_bTime = b;}
-    public void setUsesReps(boolean b){m_bReps = b;}
-    public void setUsesOthers(boolean b){m_bOther = b;}
-    public void setOtherName(String s){m_sOther = s;}
+    //public void setUsesWeight(boolean b){m_bWeight = b;}
+    //public void setUsesTime(boolean b){m_bTime = b;}
+    //public void setUsesReps(boolean b){m_bReps = b;}
+    //public void setUsesOthers(boolean b){m_bOther = b;}
+    //public void setOtherName(String s){m_sOther = s;}
 
     public void setAnimate(boolean b){mAnimate = b;}
     public boolean doAnimation(){return mAnimate;}

@@ -1,5 +1,6 @@
 package com.main.toledo.gymtrackr;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBarActivity;
@@ -24,11 +25,11 @@ public class WorkspaceActivity extends ActionBarActivity {
     //BROWSE STATES
     final int NOT_BROWSE = 0, BROWSE_WORKOUT = 1, WORKOUT_BROWSE = 2;
 
-    boolean workout_from_plan_flag = false;
+    //boolean workout_from_plan_flag = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        /*
         mode = WorkoutData.get(this).getState();
         switch(mode){
             case PLAN:
@@ -52,7 +53,7 @@ public class WorkspaceActivity extends ActionBarActivity {
                 WorkoutData.get(this).setWorkoutState(WORKOUT);
                 break;
         }
-
+        */
         setContentView(R.layout.w_activity_main);
 
         //PalletFragment = new WorkspacePalletFragment();
@@ -76,18 +77,33 @@ public class WorkspaceActivity extends ActionBarActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle presses on the action bar items
+        Intent i;
         switch (item.getItemId()) {
             /*
             case R.id.action_toggle_edit:
                 toggleEdit();
                 return true;
-                */
             case R.id.save_changes:
                 WorkspaceConfirmDialog dialog = new WorkspaceConfirmDialog();
                 dialog.show(getFragmentManager(), "NameDialogFragment");
                 return true;
             case R.id.action_settings:
                 //openSettings();
+                return true;
+                */
+            case R.id.plan_menu:
+                i = new Intent(WorkspaceActivity.this, LoadActivity.class);
+                startActivity(i);
+                return true;
+            case R.id.action_save_to_history:
+                return true;
+            case R.id.action_view_history:
+                i = new Intent(WorkspaceActivity.this, historyActivity.class);
+                startActivity(i);
+                return true;
+            case R.id.action_clear:
+                WorkoutData.get(this).initialize();
+                ListFragment.getAdapter().notifyDataSetChanged();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -97,24 +113,17 @@ public class WorkspaceActivity extends ActionBarActivity {
     public void save(){
         if (mode == PLAN) {
             //CODE FOR PLAN SAVE
-            Plan p = WorkoutData.get(this).crapNewPlan();
-            DatabaseWrapper db = new DatabaseWrapper();
-            db.saveEntirePlan(p);
+            WorkoutData.get(this).savePlan();
         }
         if (mode == WORKOUT || mode == WORKOUT_WITH_PLAN) {
             //CODE FOR WORKOUT SAVE, EG EXPORT TO HISTORY
-            DatabaseWrapper db = new DatabaseWrapper();
-            ExerciseHistory[] eh = WorkoutData.get(this).crapHistory();
-            db.addExerciseToHistory(eh);
-            removeChecked();
+            //DatabaseWrapper db = new DatabaseWrapper();
+            WorkoutData.get(this).saveHistory();
+            //removeChecked();
         }
     }
 
     public int getAppMode(){return mode;}
-
-    private void removeChecked(){
-        //ListFragment.workspaceListView.removeCheckedItems();
-    }
 
     @Override
     public void onResume(){
